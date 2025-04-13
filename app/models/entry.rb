@@ -12,7 +12,9 @@
 class Entry < ApplicationRecord
   CATEGORIES = %w[Diary ChatGPT].freeze
 
-  validates :category, inclusion: { in: CATEGORIES }
+  # Ensures category is either "Diary" or "ChatGPT", defaulting to "Diary"
+  validates :category, inclusion: { in: CATEGORIES, message: "%{value} is not a valid category" }
+  before_validation :set_default_category
 
   # Override the getter for the 'content' attribute
   def content
@@ -24,12 +26,13 @@ class Entry < ApplicationRecord
       Rails.logger.error("Private key not loaded, cannot decrypt content for Entry ##{id}")
       # Depending on requirements, you might return the encrypted content,
       # return an error message, or raise an exception.
-      return "[Content Encrypted - Key Unavailable]"
+      "[Content Encrypted - Key Unavailable]"
     end
 
     begin
       decoded_content = Base64.strict_decode64(encrypted_content)
-      private_key.private_decrypt(decoded_content)
+      decrypted = private_key.private_decrypt(decoded_content)
+      decrypted.force_encoding('UTF-8')
     rescue OpenSSL::PKey::RSAError => e
       Rails.logger.error("Decryption failed for Entry ##{id}: #{e.message}")
       "[Content Decryption Failed]"
@@ -43,7 +46,6 @@ class Entry < ApplicationRecord
   def content=(new_content)
     if new_content.blank?
       write_attribute(:content, nil)
-      return
     end
 
     public_key = Rails.application.config.encryption_keys&.[](:public_key)
@@ -61,5 +63,11 @@ class Entry < ApplicationRecord
       Rails.logger.error("Encryption failed for Entry ##{id || 'new'}: #{e.message}")
       raise "Cannot save entry: Encryption failed."
     end
+  end
+
+  private
+
+  def set_default_category
+    self.category ||= "Diary"
   end
 end

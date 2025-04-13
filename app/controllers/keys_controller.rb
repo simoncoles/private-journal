@@ -1,5 +1,5 @@
-require 'zip'
-require 'stringio'
+require "zip"
+require "stringio"
 
 class KeysController < ApplicationController
   def index
@@ -27,8 +27,8 @@ class KeysController < ApplicationController
     zip_data = stringio.read
 
     send_data zip_data,
-              type: 'application/zip',
-              disposition: 'attachment',
-              filename: "private_journal_keys_#{Time.current.strftime('%Y%m%d%H%M%S')}.zip"
+              type: "application/zip",
+              disposition: "attachment",
+              filename: "private_journal_keys_#{Time.current.strftime("%Y%m%d%H%M%S")}.zip"
   end
 end
