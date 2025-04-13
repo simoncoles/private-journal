@@ -61,11 +61,11 @@ class EntriesController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_entry
-      @entry = Entry.find(params.expect(:id))
+      @entry = Entry.find(params.require(:id))
     end
 
     # Only allow a list of trusted parameters through.
     def entry_params
-      params.expect(entry: [ :entry_date, :content, :category ])
+      params.require(:entry).permit(:entry_date, :content, :category)
     end
 end

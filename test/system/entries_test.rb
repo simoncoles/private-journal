@@ -12,10 +12,13 @@ class EntriesTest < ApplicationSystemTestCase
 
   test "should create entry" do
     visit entries_url
-    click_on "New entry"
+    click_on "New Entry"
 
-    fill_in "Content", with: @entry.content
-    fill_in "Entry date", with: @entry.entry_date
+    # Use specific values that will pass validations
+    fill_in "Content", with: "Test content for a new entry"
+    fill_in "Entry date", with: DateTime.current.strftime("%Y-%m-%dT%H:%M")
+    select "Diary", from: "Category"
+
     click_on "Create Entry"
 
     assert_text "Entry was successfully created"
