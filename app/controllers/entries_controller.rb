@@ -66,6 +66,6 @@ class EntriesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def entry_params
-      params.expect(entry: [ :entry_date, :content ])
+      params.expect(entry: [ :entry_date, :content, :category ])
     end
 end

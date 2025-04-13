@@ -1,4 +1,8 @@
 class Entry < ApplicationRecord
+  CATEGORIES = %w[Diary ChatGPT].freeze
+
+  validates :category, inclusion: { in: CATEGORIES }
+
   # Override the getter for the 'content' attribute
   def content
     encrypted_content = read_attribute(:content)

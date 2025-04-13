@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_13_152934) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_13_154245) do
   create_table "encryption_keys", force: :cascade do |t|
     t.text "public_key"
     t.text "private_key"
@@ -23,5 +23,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_13_152934) do
     t.text "content"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "category", default: "Diary", null: false
   end
 end
