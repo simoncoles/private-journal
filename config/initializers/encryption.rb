@@ -12,5 +12,5 @@ require "base64"
 #     raise "Encryption keys are not set in the environment variables."
 #   end
 # else
-  # Load development keys or generate them if they don't exist
+#   # Load development keys or generate them if they don't exist
 # end
