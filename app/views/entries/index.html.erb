@@ -1,0 +1,45 @@
+<% content_for :title, "Journal Entries" %>
+
+<div class="container mx-auto px-4 py-8">
+  <% if notice.present? %>
+    <p class="py-3 px-4 bg-green-100 mb-6 text-green-700 font-medium rounded-lg shadow-sm inline-block" id="notice"><%= notice %></p>
+  <% end %>
+
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="font-bold text-3xl text-gray-800">Journal Entries</h1>
+    <%= link_to "New Entry", new_entry_path, class: "rounded-lg px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+  </div>
+
+  <div id="entries" class="bg-white shadow overflow-hidden sm:rounded-md">
+    <ul role="list" class="divide-y divide-gray-200">
+      <% if @entries.any? %>
+        <% @entries.order(entry_date: :desc).each do |entry| %>
+          <li class="px-4 py-4 sm:px-6">
+            <div class="flex items-center justify-between">
+              <table>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <% if entry.entry_date %>
+                      <%= entry.entry_date.strftime("%B %d, %Y %I:%M %p") %>
+                    <% else %>
+                      N/A
+                    <% end %>
+                  </td>
+                </tr>
+              </table>
+              <div class="ml-4 flex-shrink-0 flex space-x-2">
+                <%= link_to "Show", entry, class: "rounded-md px-3 py-1.5 text-sm font-medium bg-white text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" %>
+                <%= link_to "Edit", edit_entry_path(entry), class: "rounded-md px-3 py-1.5 text-sm font-medium bg-white text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" %>
+                <%= button_to "Destroy", entry, method: :delete, class: "rounded-md px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 ring-1 ring-inset ring-red-200 hover:bg-red-100", data: { turbo_confirm: "Are you sure?" } %>
+              </div>
+            </div>
+          </li>
+        <% end %>
+      <% else %>
+        <li class="px-4 py-10 sm:px-6">
+          <p class="text-center text-gray-500">No entries yet. Create your first one!</p>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+</div>

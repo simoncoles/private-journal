@@ -22,3 +22,10 @@ Things you may want to cover:
 * Deployment instructions
 
 * ...
+
+Key generation
+
+```bash
+openssl genpkey -algorithm RSA -out config/keys/private.pem -pkeyopt rsa_keygen_bits:4096 && openssl rsa -pubout -in config/keys/private.pem -out config/keys/public.pem
+```
+    

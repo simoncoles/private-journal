@@ -1,0 +1,35 @@
+<% content_for :title, @entry.entry_date.strftime("%B %d, %Y") %>
+
+<div class="container mx-auto px-4 py-8">
+  <% if notice.present? %>
+    <p class="py-3 px-4 bg-green-100 mb-6 text-green-700 font-medium rounded-lg shadow-sm inline-block" id="notice"><%= notice %></p>
+  <% end %>
+
+  <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6">
+      <h1 class="text-xl leading-6 font-medium text-gray-900">
+        Entry for <%= @entry.entry_date.strftime("%B %d, %Y") %>
+      </h1>
+    </div>
+    <dl>
+      <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+        <dt class="text-sm font-medium text-gray-500">Date</dt>
+        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+          <%= @entry.entry_date.strftime("%B %d, %Y at %I:%M %p") %>
+        </dd>
+      </div>
+    </dl>
+    <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+      <div class="prose max-w-none">
+        <%# Render content using the markdown helper %>
+        <%= markdown(@entry.content) %> 
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap gap-2">
+    <%= link_to "Edit this entry", edit_entry_path(@entry), class: "rounded-md px-3 py-1.5 text-sm font-medium bg-white text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" %>
+    <%= link_to "Back to entries", entries_path, class: "rounded-md px-3 py-1.5 text-sm font-medium bg-white text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" %>
+    <%= button_to "Destroy this entry", @entry, method: :delete, class: "rounded-md px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 ring-1 ring-inset ring-red-200 hover:bg-red-100", data: { turbo_confirm: "Are you sure?" } %>
+  </div>
+</div>

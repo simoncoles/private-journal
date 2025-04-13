@@ -1,0 +1,30 @@
+<%= form_with(model: entry, class: "contents") do |form| %>
+  <% if entry.errors.any? %>
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-5">
+      <h2 class="font-bold"><%= pluralize(entry.errors.count, "error") %> prohibited this entry from being saved:</h2>
+
+      <ul class="list-disc ml-6 mt-2">
+        <% entry.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="space-y-6">
+    <div>
+      <%= form.label :entry_date, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.datetime_field :entry_date, class: ["block shadow-sm rounded-md border border-gray-300 px-3 py-2 w-full focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm", { "border-red-400 focus:ring-red-500 focus:border-red-500": entry.errors[:entry_date].any? }] %>
+    </div>
+
+    <div>
+      <%= form.label :content, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.textarea :content, rows: 10, class: ["block shadow-sm rounded-md border border-gray-300 px-3 py-2 w-full focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm", { "border-red-400 focus:ring-red-500 focus:border-red-500": entry.errors[:content].any? }] %>
+      <p class="mt-2 text-sm text-gray-500">Content supports Markdown formatting.</p>
+    </div>
+
+    <div class="flex justify-end">
+      <%= form.submit class: "w-full sm:w-auto rounded-md shadow-sm px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+    </div>
+  </div>
+<% end %>

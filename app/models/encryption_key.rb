@@ -1,0 +1,2 @@
+class EncryptionKey < ApplicationRecord
+end
