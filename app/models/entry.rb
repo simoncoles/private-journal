@@ -39,6 +39,9 @@ class Entry < ApplicationRecord
     rescue ArgumentError => e # Handle potential Base64 decoding errors
       Rails.logger.error("Base64 decoding failed for Entry ##{id}: #{e.message}")
       "[Content Corrupted - Invalid Encoding]"
+    rescue StandardError => e # Catch any other unexpected errors during decryption
+      Rails.logger.error("Unexpected error during decryption for Entry ##{id}: #{e.class} - #{e.message}")
+      "[Content Decryption Failed]" # Return the standard failure message
     end
   end
 
