@@ -42,10 +42,9 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", ">= 1.2"
 
-gem "redcarpet" # For Markdown rendering
-
-# Use redis for caching and session storage.
 gem "redis", ">= 5.0"
+gem "redcarpet" # For Markdown rendering
+gem "rubyzip", require: "zip" # For creating zip archives
 
 # gem "lockbox" # Removed, using manual OpenSSL
 

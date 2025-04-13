@@ -1,0 +1,31 @@
+<div>
+  <h1 class="font-bold text-4xl">Keys#index</h1>
+  <p>Find me in app/views/keys/index.html.erb</p>
+</div>
+
+<% content_for :title, "Download Encryption Keys" %>
+
+<div class="container mx-auto px-4 py-8 max-w-xl">
+  <h1 class="font-bold text-3xl text-gray-800 mb-6">Manage Encryption Keys</h1>
+
+  <% if flash[:alert] %>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+      <strong class="font-bold">Error:</strong>
+      <span class="block sm:inline"><%= flash[:alert] %></span>
+    </div>
+  <% end %>
+
+  <div class="bg-white shadow overflow-hidden sm:rounded-lg p-6">
+    <h2 class="text-lg font-medium text-gray-900 mb-4">Download Keys</h2>
+    <p class="text-sm text-gray-600 mb-4">
+      Click the button below to download a zip file containing the application's public and private encryption keys.
+      Store these keys securely, especially the private key, as it's required to decrypt your journal entries.
+    </p>
+    <%= link_to "Download Keys as ZIP", keys_download_path, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500", data: { turbo: false } %>
+  </div>
+
+  <div class="mt-6">
+      <%= link_to "Back to Entries", entries_path, class: "rounded-md px-3 py-1.5 text-sm font-medium bg-white text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" %>
+  </div>
+
+</div>
