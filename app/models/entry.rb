@@ -33,6 +33,14 @@ class Entry < ApplicationRecord
       decoded_content = Base64.strict_decode64(encrypted_content)
       decrypted = private_key.private_decrypt(decoded_content)
       decrypted.force_encoding("UTF-8")
+
+      # Add validity check after forcing encoding
+      unless decrypted.valid_encoding?
+        Rails.logger.error("Decryption resulted in invalid UTF-8 sequence for Entry ##{id}")
+        return "[Content Decryption Failed]"
+      end
+
+      decrypted # Return the valid, decrypted content
     rescue OpenSSL::PKey::RSAError => e
       Rails.logger.error("Decryption failed for Entry ##{id}: #{e.message}")
       "[Content Decryption Failed]"
