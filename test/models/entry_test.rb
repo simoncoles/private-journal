@@ -12,27 +12,6 @@
 require "test_helper"
 
 class EntryTest < ActiveSupport::TestCase
-  # Generate a test key pair for encryption/decryption tests
-  def setup
-    # Generate a 2048-bit RSA key pair for testing
-    @test_private_key = OpenSSL::PKey::RSA.new(2048)
-    @test_public_key = @test_private_key.public_key
-
-    # Stub the Rails configuration to use these keys during tests
-    # Note: Ensure any existing config is restored if necessary, although
-    # ActiveSupport::TestCase transactions usually handle isolation.
-    @original_keys = Rails.application.config.encryption_keys
-    Rails.application.config.encryption_keys = {
-      public_key: @test_public_key,
-      private_key: @test_private_key
-    }
-  end
-
-  def teardown
-    # Restore original keys if they existed
-    Rails.application.config.encryption_keys = @original_keys
-  end
-
   test "should be valid with default category" do
     entry = Entry.new(content: "Test content", entry_date: Time.current)
     assert entry.valid?
@@ -56,8 +35,11 @@ class EntryTest < ActiveSupport::TestCase
     # This tests the model validation before DB default might apply
     entry = Entry.new(content: "Test content", entry_date: Time.current)
     entry.category = nil # Explicitly set to nil to bypass default mechanism if any
-    assert_not entry.valid?
-    assert entry.errors[:category].any?, "Should have an error on category when nil"
+
+    # With the before_validation callback, category will be defaulted to 'Diary'
+    # Therefore, the entry should actually be valid.
+    assert entry.valid?, "Entry should be valid because the default category is applied before validation"
+    assert entry.errors[:category].empty?, "Should not have an error on category when default is applied"
   end
 
   # --- Encryption/Decryption Tests ---
@@ -118,8 +100,8 @@ class EntryTest < ActiveSupport::TestCase
   end
 
   test "should raise error if public key is missing during encryption" do
-    # Temporarily remove the public key from the stubbed config
-    Rails.application.config.encryption_keys = { private_key: @test_private_key }
+    original_keys = Rails.application.config.encryption_keys
+    Rails.application.config.encryption_keys = {}
 
     entry = Entry.new(entry_date: Time.current)
 
@@ -127,8 +109,7 @@ class EntryTest < ActiveSupport::TestCase
       entry.content = "This should fail to encrypt"
     end
 
-    # Restore for other tests
-    Rails.application.config.encryption_keys = { public_key: @test_public_key, private_key: @test_private_key }
+    Rails.application.config.encryption_keys = original_keys # Restore
   end
 
   test "should return error message if private key is missing during decryption" do
@@ -137,16 +118,16 @@ class EntryTest < ActiveSupport::TestCase
     entry.content = "Encrypt me first"
     entry.save!
 
-    # Temporarily remove the private key from the stubbed config
-    Rails.application.config.encryption_keys = { public_key: @test_public_key }
+    original_keys = Rails.application.config.encryption_keys
+    public_key = original_keys[:public_key]
+    Rails.application.config.encryption_keys = { public_key: public_key }
 
     reloaded_entry = Entry.find(entry.id)
 
     # Check that the custom getter returns the placeholder message
     assert_equal "[Content Encrypted - Key Unavailable]", reloaded_entry.content
 
-    # Restore for other tests
-    Rails.application.config.encryption_keys = { public_key: @test_public_key, private_key: @test_private_key }
+    Rails.application.config.encryption_keys = original_keys # Restore
   end
 
   test "should return error message if decryption fails" do

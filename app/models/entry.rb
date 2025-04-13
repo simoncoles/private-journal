@@ -26,7 +26,7 @@ class Entry < ApplicationRecord
       Rails.logger.error("Private key not loaded, cannot decrypt content for Entry ##{id}")
       # Depending on requirements, you might return the encrypted content,
       # return an error message, or raise an exception.
-      "[Content Encrypted - Key Unavailable]"
+      return "[Content Encrypted - Key Unavailable]"
     end
 
     begin
@@ -46,6 +46,7 @@ class Entry < ApplicationRecord
   def content=(new_content)
     if new_content.blank?
       write_attribute(:content, nil)
+      return # Return early to prevent encrypting nil/blank
     end
 
     public_key = Rails.application.config.encryption_keys&.[](:public_key)
