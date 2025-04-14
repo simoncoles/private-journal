@@ -17,3 +17,9 @@ one:
 two:
   public_key: MyText
   private_key: MyText
+
+default_key:
+  public_key: "---BEGIN PUBLIC KEY---- PLACEHOLDER ---END PUBLIC KEY----"
+  private_key: "---BEGIN RSA PRIVATE KEY---- PLACEHOLDER ---END RSA PRIVATE KEY----"
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>

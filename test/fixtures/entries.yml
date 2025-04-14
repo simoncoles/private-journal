@@ -12,9 +12,13 @@
 #  updated_at :datetime         not null
 #
 one:
-  entry_date: 2025-04-13
-  content: MyText
+  entry_date: <%= Time.current %>
+  content: "Placeholder encrypted content for entry one"
+  category: Diary
+  encryption_key: default_key # Link to the key fixture in encryption_keys.yml
 
 two:
-  entry_date: 2025-04-13
-  content: MyText
+  entry_date: <%= 1.day.ago %>
+  content: "Placeholder encrypted content for entry two"
+  category: ChatGPT
+  encryption_key: default_key # Link to the key fixture in encryption_keys.yml

@@ -27,8 +27,7 @@
     </dl>
     <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
       <div class="prose max-w-none">
-        <%# Render content using the markdown helper %>
-        <%= markdown(@entry.decrypted_content) %> 
+        <%= @entry.content %>
       </div>
     </div>
   </div>
