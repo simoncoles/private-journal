@@ -40,10 +40,17 @@
 #                       rails_disk_service GET    /rails/active_storage/disk/:encoded_key/*filename(.:format)                                       active_storage/disk#show
 #                update_rails_disk_service PUT    /rails/active_storage/disk/:encoded_token(.:format)                                               active_storage/disk#update
 #                     rails_direct_uploads POST   /rails/active_storage/direct_uploads(.:format)                                                    active_storage/direct_uploads#create
-
+#                            new_session GET    /unlock(.:format)                                                                                   sessions#new
+#                                session POST   /unlock(.:format)                                                                                   sessions#create
+#                                          DELETE /lock(.:format)                                                                                   sessions#destroy
 Rails.application.routes.draw do
   resources :entries
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  resources :encryption_keys
+ 
+  # Routes for unlocking/locking the journal (session management for the decrypted key)
+  resource :session, only: [:new, :create, :destroy], path_names: { new: 'unlock' }
+  # Map DELETE /lock to sessions#destroy for clarity
+  delete '/lock', to: 'sessions#destroy', as: 'lock_session'
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.

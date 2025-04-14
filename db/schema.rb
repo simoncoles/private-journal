@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_14_090939) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_14_091526) do
   create_table "encryption_keys", force: :cascade do |t|
     t.text "public_key"
     t.text "private_key"
@@ -24,6 +24,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_14_090939) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "category", default: "Diary", null: false
+    t.integer "encryption_key_id", null: false
+    t.index ["encryption_key_id"], name: "index_entries_on_encryption_key_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -34,4 +36,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_14_090939) do
     t.index ["session_id"], name: "index_sessions_on_session_id", unique: true
     t.index ["updated_at"], name: "index_sessions_on_updated_at"
   end
+
+  add_foreign_key "entries", "encryption_keys"
 end

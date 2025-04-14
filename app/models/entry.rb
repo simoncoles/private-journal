@@ -2,82 +2,82 @@
 #
 # Table name: entries
 #
-#  id         :integer          not null, primary key
-#  category   :string           default("Diary"), not null
-#  content    :text
-#  entry_date :datetime
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
+#  id              :integer          not null, primary key
+#  category        :string           default("Diary"), not null
+#  content         :text
+#  entry_date      :datetime
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#  encryption_key_id :integer
 #
 class Entry < ApplicationRecord
+  belongs_to :encryption_key
+
   CATEGORIES = %w[Diary ChatGPT].freeze
 
   # Ensures category is either "Diary" or "ChatGPT", defaulting to "Diary"
+  validates :content, presence: true
   validates :category, inclusion: { in: CATEGORIES, message: "%{value} is not a valid category" }
+
+  # Assign key and encrypt before validation runs
+  before_validation :assign_and_encrypt_content
   before_validation :set_default_category
 
-  # Override the getter for the 'content' attribute
-  def content
-    encrypted_content = read_attribute(:content)
-    return nil if encrypted_content.blank?
-
-    private_key = Rails.application.config.encryption_keys&.[](:private_key)
-    unless private_key
-      Rails.logger.error("Private key not loaded, cannot decrypt content for Entry ##{id}")
-      # Depending on requirements, you might return the encrypted content,
-      # return an error message, or raise an exception.
-      return "[Content Encrypted - Key Unavailable]"
-    end
+  # Decrypt content using the private key stored in Current
+  def decrypted_content
+    return nil unless content.present? && Current.decrypted_private_key
 
     begin
-      decoded_content = Base64.strict_decode64(encrypted_content)
-      decrypted = private_key.private_decrypt(decoded_content)
-      decrypted.force_encoding("UTF-8")
+      # Load the private key stored in Current after unlock
+      private_key = OpenSSL::PKey::RSA.new(Current.decrypted_private_key)
 
-      # Add validity check after forcing encoding
-      unless decrypted.valid_encoding?
-        Rails.logger.error("Decryption resulted in invalid UTF-8 sequence for Entry ##{id}")
-        return "[Content Decryption Failed]"
-      end
+      # Decode the Base64 content from the database
+      encrypted_data = Base64.decode64(self.content)
 
-      decrypted # Return the valid, decrypted content
+      # Decrypt the content
+      private_key.private_decrypt(encrypted_data)
     rescue OpenSSL::PKey::RSAError => e
-      Rails.logger.error("Decryption failed for Entry ##{id}: #{e.message}")
-      "[Content Decryption Failed]"
-    rescue ArgumentError => e # Handle potential Base64 decoding errors
-      Rails.logger.error("Base64 decoding failed for Entry ##{id}: #{e.message}")
-      "[Content Corrupted - Invalid Encoding]"
-    rescue StandardError => e # Catch any other unexpected errors during decryption
-      Rails.logger.error("Unexpected error during decryption for Entry ##{id}: #{e.class} - #{e.message}")
-      "[Content Decryption Failed]" # Return the standard failure message
-    end
-  end
-
-  # Override the setter for the 'content' attribute
-  def content=(new_content)
-    if new_content.blank?
-      write_attribute(:content, nil)
-      return # Return early to prevent encrypting nil/blank
-    end
-
-    public_key = Rails.application.config.encryption_keys&.[](:public_key)
-    unless public_key
-      Rails.logger.error("Public key not loaded, cannot encrypt content for Entry ##{id || 'new'}")
-      # Decide how to handle this - maybe raise an error to prevent saving unencrypted data?
-      raise "Cannot save entry: Encryption key unavailable."
-    end
-
-    begin
-      encrypted_content = public_key.public_encrypt(new_content.to_s)
-      encoded_content = Base64.strict_encode64(encrypted_content)
-      write_attribute(:content, encoded_content)
-    rescue OpenSSL::PKey::RSAError => e
-      Rails.logger.error("Encryption failed for Entry ##{id || 'new'}: #{e.message}")
-      raise "Cannot save entry: Encryption failed."
+      # Handle decryption errors (e.g., wrong key, corrupted data)
+      Rails.logger.error("Decryption failed for Entry #{id}: #{e.message}")
+      "Error decrypting content." # Or return nil, or raise an error
     end
   end
 
   private
+
+  # Encrypt content using the public key of the latest EncryptionKey
+  def assign_and_encrypt_content
+    # Find the latest encryption key if one isn't already associated
+    self.encryption_key ||= EncryptionKey.order(created_at: :desc).first
+
+    # Ensure we have a key
+    unless self.encryption_key
+      # The belongs_to validation should catch this first, but check defensively
+      errors.add(:base, "No encryption key available.")
+      throw(:abort) # Prevent saving if no key is found
+    end
+
+    # Ensure we have content to encrypt and it's not already encrypted (simple check)
+    # This check might need refinement depending on how updates are handled.
+    # For simplicity, we re-encrypt on every save if content is present.
+    return unless self.content.present?
+
+    begin
+      # Load the public key
+      public_key = OpenSSL::PKey::RSA.new(self.encryption_key.public_key)
+
+      # Encrypt the content
+      encrypted_data = public_key.public_encrypt(self.content)
+
+      # Store the encrypted content (Base64 encoded for database storage)
+      self.content = Base64.encode64(encrypted_data)
+    rescue OpenSSL::PKey::RSAError => e
+      # Handle encryption errors
+      Rails.logger.error("Encryption failed for Entry: #{e.message}")
+      errors.add(:content, "could not be encrypted: #{e.message}")
+      throw(:abort) # Prevent saving if encryption fails
+    end
+  end
 
   def set_default_category
     self.category ||= "Diary"

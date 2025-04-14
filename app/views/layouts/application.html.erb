@@ -22,9 +22,48 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <main class="container mx-auto mt-28 px-5 flex">
-      <%= yield %>
-    </main>
-  </body>
+  <body class="bg-gray-100">
+    <%# Header Icons: New Entry and Lock/Unlock %>
+    <div class="absolute top-4 right-4 flex items-center space-x-2">
+      <%# NEW ENTRY LINK %>
+      <%= link_to new_entry_path, class: "text-gray-600 hover:text-gray-900 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500", title: "New Entry" do %>
+        <%# Document Add SVG (Heroicons v1 - outline) %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      <% end %>
+
+      <%# LOCK/UNLOCK STATUS %>
+      <% if Current.decrypted_private_key.present? %>
+        <%# UNLOCKED state - Show open padlock and Lock button %>
+        <%= button_to lock_session_path, method: :delete, class: "text-gray-600 hover:text-gray-900 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500", title: "Lock Journal", data: { turbo_confirm: "Are you sure you want to lock the journal? You will need your password to unlock it again." } do %>
+          <%# Open Padlock SVG %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8h4m-6 4h6m4-6v1a3 3 0 01-3 3H9a3 3 0 01-3-3v-1a3 3 0 013-3h2a3 3 0 013 3z" />
+          </svg>
+        <% end %>
+      <% else %>
+        <%# LOCKED state - Show closed padlock and link to Unlock page %>
+        <%= link_to new_session_path, class: "text-gray-600 hover:text-gray-900 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500", title: "Unlock Journal" do %>
+          <%# Closed Padlock SVG %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        <% end %>
+      <% end %>
+    </div> <%# End of flex container %>
+
+    <%# Add some padding-top to main content to avoid overlap with the absolute positioned icon %>
+    <main class="container mx-auto pt-12 mt-10 px-5 flex flex-col items-center">
+      <%# Flash messages %>
+      <% if notice %>
+        <p class="py-3 px-4 bg-green-100 mb-6 text-green-700 font-medium rounded-lg shadow-sm inline-block" id="notice"><%= notice %></p>
+      <% end %>
+       <% if alert %>
+        <p class="py-3 px-4 bg-red-100 mb-6 text-red-700 font-medium rounded-lg shadow-sm inline-block" id="alert"><%= alert %></p>
+      <% end %>
+      
+       <%= yield %>
+     </main>
+   </body>
 </html>
