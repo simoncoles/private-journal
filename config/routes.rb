@@ -46,11 +46,11 @@
 Rails.application.routes.draw do
   resources :entries
   resources :encryption_keys
- 
+
   # Routes for unlocking/locking the journal (session management for the decrypted key)
-  resource :session, only: [:new, :create, :destroy], path_names: { new: 'unlock' }
+  resource :session, only: [ :new, :create, :destroy ], path_names: { new: "unlock" }
   # Map DELETE /lock to sessions#destroy for clarity
-  delete '/lock', to: 'sessions#destroy', as: 'lock_session'
+  delete "/lock", to: "sessions#destroy", as: "lock_session"
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
@@ -65,6 +65,18 @@ Rails.application.routes.draw do
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+
+  # API specific routes
+  namespace :api do
+    resources :entries, except: [ :edit, :update ] do # Keep index, show, new, create, destroy for API
+      collection do
+        get "edit/:id", to: "entries#edit", as: "edit"       # Map GET api/entries/edit/:id to api/entries#edit
+        put ":id", to: "entries#update"                     # Map PUT api/entries/:id to api/entries#update
+        patch ":id", to: "entries#update"                   # Map PATCH api/entries/:id to api/entries#update
+        delete ":id", to: "entries#destroy"                  # Explicitly map DELETE api/entries/:id to api/entries#destroy
+      end
+    end
+  end
 
   # Defines the root path route ("/")
   root "entries#index"

@@ -1,7 +1,7 @@
 # app/controllers/sessions_controller.rb
 class SessionsController < ApplicationController
   # Skip the filter that loads from session into Current for the unlock form and action itself
-  skip_before_action :set_current_request_details, only: [:new, :create], raise: false # Use raise: false for Rails 6.1+
+  skip_before_action :set_current_request_details, only: [ :new, :create ], raise: false # Use raise: false for Rails 6.1+
 
   def new
     # Renders the unlock form (app/views/sessions/new.html.erb)

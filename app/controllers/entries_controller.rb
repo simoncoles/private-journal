@@ -1,7 +1,7 @@
 class EntriesController < ApplicationController
   # Add this line to enforce unlock for all entry actions
-  before_action :require_unlocked_journal, except: [:new, :create]
-  before_action :set_entry, only: %i[ show edit update destroy ]
+  before_action :require_unlocked_journal, except: [ :new, :create ]
+  before_action :set_entry, only: [ :show, :edit, :update, :destroy ]
 
   # GET /entries or /entries.json
   def index

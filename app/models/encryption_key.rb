@@ -8,8 +8,8 @@
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #
-require 'openssl'
-require 'base64'
+require "openssl"
+require "base64"
 
 class EncryptionKey < ApplicationRecord
   # Generates a new RSA key pair, encrypts the private key with a passphrase,
@@ -19,7 +19,7 @@ class EncryptionKey < ApplicationRecord
   # @return [EncryptionKey] The newly created EncryptionKey instance.
   # @raise [ArgumentError] if the passphrase is blank.
   def self.generate_and_save(passphrase)
-    raise ArgumentError, 'Passphrase cannot be blank' if passphrase.blank?
+    raise ArgumentError, "Passphrase cannot be blank" if passphrase.blank?
 
     # Generate a new 2048-bit RSA key pair
     key_pair = OpenSSL::PKey::RSA.new(2048)
@@ -27,13 +27,13 @@ class EncryptionKey < ApplicationRecord
     private_key_pem = key_pair.to_pem # Use the full key pair PEM for encryption
 
     # Encrypt the private key using AES-256-CBC
-    cipher = OpenSSL::Cipher.new('aes-256-cbc')
+    cipher = OpenSSL::Cipher.new("aes-256-cbc")
     cipher.encrypt
     # Use PBKDF2 to derive a key from the passphrase for better security
     salt = OpenSSL::Random.random_bytes(16) # Generate a random salt
     iter = 20000 # Number of iterations for PBKDF2
     key_len = cipher.key_len
-    digest = OpenSSL::Digest.new('sha256')
+    digest = OpenSSL::Digest.new("sha256")
     derived_key = OpenSSL::PKCS5.pbkdf2_hmac(passphrase, salt, iter, key_len, digest)
 
     cipher.key = derived_key
@@ -46,7 +46,7 @@ class EncryptionKey < ApplicationRecord
       Base64.strict_encode64(salt),
       Base64.strict_encode64(iv),
       Base64.strict_encode64(encrypted_private_key)
-    ].join(':')
+    ].join(":")
 
     # Create and save the new EncryptionKey record
     create!(public_key: public_key_pem, private_key: encrypted_data)
@@ -59,24 +59,24 @@ class EncryptionKey < ApplicationRecord
   # @raise [ArgumentError] if the passphrase is blank.
   # @raise [OpenSSL::Cipher::CipherError] if decryption fails (e.g., wrong passphrase).
   def decrypt_private_key(passphrase)
-    raise ArgumentError, 'Passphrase cannot be blank' if passphrase.blank?
-    raise StandardError, 'Private key data is missing' if private_key.blank?
+    raise ArgumentError, "Passphrase cannot be blank" if passphrase.blank?
+    raise StandardError, "Private key data is missing" if private_key.blank?
 
     # Decode the stored data
-    salt_b64, iv_b64, encrypted_key_b64 = private_key.split(':')
-    raise StandardError, 'Invalid private key data format' unless salt_b64 && iv_b64 && encrypted_key_b64
+    salt_b64, iv_b64, encrypted_key_b64 = private_key.split(":")
+    raise StandardError, "Invalid private key data format" unless salt_b64 && iv_b64 && encrypted_key_b64
 
     salt = Base64.strict_decode64(salt_b64)
     iv = Base64.strict_decode64(iv_b64)
     encrypted_private_key = Base64.strict_decode64(encrypted_key_b64)
 
     # Decrypt the private key
-    decipher = OpenSSL::Cipher.new('aes-256-cbc')
+    decipher = OpenSSL::Cipher.new("aes-256-cbc")
     decipher.decrypt
     # Use the same PBKDF2 parameters to derive the key
     iter = 20000 # Must match the encryption iteration count
     key_len = decipher.key_len
-    digest = OpenSSL::Digest.new('sha256')
+    digest = OpenSSL::Digest.new("sha256")
     derived_key = OpenSSL::PKCS5.pbkdf2_hmac(passphrase, salt, iter, key_len, digest)
 
     decipher.key = derived_key
@@ -93,4 +93,8 @@ class EncryptionKey < ApplicationRecord
       raise StandardError, "Failed to parse decrypted private key PEM. Original error: #{e.message}"
     end
   end
+
+  # Basic presence validations
+  validates :public_key, presence: { message: "cannot be blank" }
+  validates :private_key, presence: { message: "cannot be blank" }
 end
