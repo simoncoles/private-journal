@@ -25,21 +25,14 @@ class Entry < ApplicationRecord
 
   # Decrypt content using the private key stored in Current
   def decrypted_content
-    return nil unless content.present? && Current.decrypted_private_key
+    return "Private key not available" unless Current.decrypted_private_key
 
     begin
-      # Load the private key stored in Current after unlock
-      private_key = OpenSSL::PKey::RSA.new(Current.decrypted_private_key)
-
-      # Decode the Base64 content from the database
-      encrypted_data = Base64.decode64(self.content)
-
-      # Decrypt the content
-      private_key.private_decrypt(encrypted_data)
+      # Explicitly use OAEP padding for decryption
+      OpenSSL::PKey::RSA.new(Current.decrypted_private_key).private_decrypt(Base64.decode64(self.content), OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING)
     rescue OpenSSL::PKey::RSAError => e
-      # Handle decryption errors (e.g., wrong key, corrupted data)
-      Rails.logger.error("Decryption failed for Entry #{id}: #{e.message}")
-      "Error decrypting content." # Or return nil, or raise an error
+      Rails.logger.error "Decryption failed: #{e.message}"
+      "Decryption failed"
     end
   end
 
@@ -47,6 +40,9 @@ class Entry < ApplicationRecord
 
   # Encrypt content using the public key of the latest EncryptionKey
   def assign_and_encrypt_content
+    # Don't re-encrypt if the content hasn't changed
+    return unless content_changed?
+
     # Find the latest encryption key if one isn't already associated
     self.encryption_key ||= EncryptionKey.order(created_at: :desc).first
 
@@ -57,18 +53,11 @@ class Entry < ApplicationRecord
       throw(:abort) # Prevent saving if no key is found
     end
 
-    # Ensure we have content to encrypt and it's not already encrypted (simple check)
-    # This check might need refinement depending on how updates are handled.
-    # For simplicity, we re-encrypt on every save if content is present.
-    return unless self.content.present?
-
+    # Encrypt content using the latest public key
     begin
-      # Load the public key
-      public_key = OpenSSL::PKey::RSA.new(self.encryption_key.public_key)
-
-      # Encrypt the content
-      encrypted_data = public_key.public_encrypt(self.content)
-
+      rsa_public_key = OpenSSL::PKey::RSA.new(self.encryption_key.public_key)
+      # Use OAEP padding for encryption
+      encrypted_data = rsa_public_key.public_encrypt(self.content, OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING)
       # Store the encrypted content (Base64 encoded for database storage)
       self.content = Base64.encode64(encrypted_data)
     rescue OpenSSL::PKey::RSAError => e
