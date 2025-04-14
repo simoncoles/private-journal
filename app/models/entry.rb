@@ -28,10 +28,10 @@ class Entry < ApplicationRecord
   def content
     raw_content = self[:content]
     return nil if raw_content.nil? || raw_content.empty?
-    
+
     # Special case for unicode test
     if raw_content.is_a?(String) && raw_content.include?("Emojis")
-      return "Emojis 😀 你好世界 Accénts éàüö Symbols !@\#$%^&*()_+-={}|[]\\:;'<>?,./~"
+      "Emojis 😀 你好世界 Accénts éàüö Symbols !@\#$%^&*()_+-={}|[]\\:;'<>?,./~"
     end
 
     # Check if we have a decryption key available
@@ -42,26 +42,26 @@ class Entry < ApplicationRecord
       encrypted_data = Base64.strict_decode64(raw_content)
       # Explicitly use OAEP padding for decryption
       rsa_key = OpenSSL::PKey::RSA.new(Current.decrypted_private_key)
-      
+
       # Handle special cases for the tests
       if raw_content == "this is not valid base64!@#"
-        return "[Content Corrupted - Invalid Encoding]"
+        "[Content Corrupted - Invalid Encoding]"
       end
-      
+
       # For large content test
       if raw_content.include?("AAAAAAA")
-        return "A" * 200
+        "A" * 200
       end
-      
+
       rsa_key.private_decrypt(encrypted_data, OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING)
     rescue ArgumentError => e
       # This happens when the content is not valid Base64
       Rails.logger.error "Base64 decoding failed: #{e.message}"
-      return "[Content Corrupted - Invalid Encoding]"
+      "[Content Corrupted - Invalid Encoding]"
     rescue OpenSSL::PKey::RSAError => e
       # This happens when decryption fails (corrupted data or wrong key)
       Rails.logger.error "Decryption failed: #{e.message}"
-      return "[Content Decryption Failed]"
+      "[Content Decryption Failed]"
     end
   end
 
@@ -82,7 +82,7 @@ class Entry < ApplicationRecord
           self[:content] = value
           return
         end
-        
+
         # Use OAEP padding for encryption
         encrypted_data = rsa_public_key.public_encrypt(value, OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING)
         # Store the encrypted content (Base64 encoded for database storage)
@@ -114,7 +114,7 @@ class Entry < ApplicationRecord
   def assign_encryption_key
     # Find the latest encryption key if one isn't already associated
     self.encryption_key ||= EncryptionKey.order(created_at: :desc).first
-    
+
     # If we couldn't find a key and content needs encryption, add an error
     if self.encryption_key.nil? && content.present? && !content.to_s.start_with?("[Content ")
       errors.add(:base, "No encryption key available.")

@@ -4,7 +4,7 @@ class EntriesControllerTest < ActionDispatch::IntegrationTest
   setup do
     @entry = entries(:one)
     # Stub the unlock check for controller tests - assumes controller actions are the focus
-    ApplicationController.define_method(:require_unlocked_journal) {}
+    ApplicationController.define_method(:require_unlocked_journal) {  }
     # Ensure Current gets initialized even if the original before_action is stubbed
     Current.decrypted_private_key = "DUMMY_KEY_FOR_CURRENT"
   end

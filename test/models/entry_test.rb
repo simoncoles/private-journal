@@ -10,7 +10,7 @@
 #  updated_at :datetime         not null
 #
 require "test_helper"
-require 'openssl'
+require "openssl"
 
 class EntryTest < ActiveSupport::TestCase
   # Setup runs before each test
