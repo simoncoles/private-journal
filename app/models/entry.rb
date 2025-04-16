@@ -11,6 +11,9 @@
 #  encryption_key_id :integer
 #
 class Entry < ApplicationRecord
+  # has_many :entry_attachments, dependent: :destroy
+  # accepts_nested_attributes_for :entry_attachments, allow_destroy: true
+  has_many_attached :attachments
   belongs_to :encryption_key
 
   CATEGORIES = %w[Diary ChatGPT].freeze

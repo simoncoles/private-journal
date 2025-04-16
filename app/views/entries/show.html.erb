@@ -30,6 +30,21 @@
         <%= @entry.content %>
       </div>
     </div>
+    <% if @entry.entry_attachments.any? %>
+      <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+        <h2 class="text-lg leading-6 font-medium text-gray-900 mb-2">Attachments</h2>
+        <ul class="list-disc list-inside">
+          <% @entry.entry_attachments.each do |att| %>
+            <li>
+              <%= link_to att.filename,
+                  download_entry_attachment_path(@entry, att),
+                  target: "_blank",
+                  class: "text-blue-600 hover:underline" %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
   </div>
 
   <div class="flex flex-wrap gap-2">

@@ -79,5 +79,13 @@ Rails.application.routes.draw do
   end
 
   # Defines the root path route ("/")
+  # Download encrypted attachments (decrypted on the fly)
+  resources :entries do
+    resources :attachments, controller: 'entry_attachments', only: [] do
+      member do
+        get :download
+      end
+    end
+  end
   root "entries#index"
 end

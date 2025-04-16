@@ -28,6 +28,8 @@ class EntriesController < ApplicationController
 
     respond_to do |format|
       if @entry.save
+        # Handle any uploaded attachment files
+        attach_files
         format.html { redirect_to @entry, notice: "Entry was successfully created." }
         format.json { render :show, status: :created, location: @entry }
       else
@@ -41,6 +43,8 @@ class EntriesController < ApplicationController
   def update
     respond_to do |format|
       if @entry.update(entry_params)
+        # Handle any newly uploaded attachment files
+        attach_files
         format.html { redirect_to @entry, notice: "Entry was successfully updated." }
         format.json { render :show, status: :ok, location: @entry }
       else
@@ -68,6 +72,22 @@ class EntriesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def entry_params
-      params.require(:entry).permit(:entry_date, :content, :category)
+      params.require(:entry).permit(
+        :entry_date,
+        :content,
+        :category,
+        attachments: []
+      )
+    end
+    
+    # Process file uploads passed in params[:entry][:attachments]
+    def attach_files
+      return unless params[:entry] && params[:entry][:attachments]
+      Array(params[:entry][:attachments]).each do |uploaded_io|
+        next unless uploaded_io.respond_to?(:original_filename)
+        attachment = @entry.entry_attachments.new
+        attachment.attach_and_encrypt(uploaded_io)
+        attachment.save!
+      end
     end
 end
