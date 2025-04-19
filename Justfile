@@ -5,7 +5,7 @@ push:
     docker push ghcr.io/simoncoles/private-journal:latest
 
 deploy:
-    ssh simonc@simon-journal.anteater-catfish.ts.net 'docker pull ghcr.io/simoncoles/private-journal:latest && docker compose up -d chat'
+    ssh simonc@simon-journal.anteater-catfish.ts.net 'docker pull ghcr.io/simoncoles/private-journal:latest && docker compose up -d private-journal'
 
 console:
     ssh -t simonc@simon-journal.anteater-catfish.ts.net 'docker exec -it private-journal-1 /rails/bin/rails console'
