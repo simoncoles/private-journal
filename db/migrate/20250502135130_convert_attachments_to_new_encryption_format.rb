@@ -1,10 +1,10 @@
 class ConvertAttachmentsToNewEncryptionFormat < ActiveRecord::Migration[8.0]
   def up
-    # This migration only affects existing attachments with data in the old format
-    execute <<-SQL
-      SELECT id, data, entry_id FROM attachments WHERE data IS NOT NULL AND data != ''
-    SQL
+    # Skip if there are no attachments yet
+    return unless ActiveRecord::Base.connection.table_exists?('attachments') && 
+                 ActiveRecord::Base.connection.column_exists?('attachments', 'data')
     
+    # This migration only affects existing attachments with data in the old format
     # Get and iterate through all existing attachments to convert them
     attachments = ActiveRecord::Base.connection.select_all("SELECT id, data, entry_id FROM attachments WHERE data IS NOT NULL AND data != ''")
     

@@ -30,15 +30,9 @@ one:
   content_type: MyString
   data: 
   entry: one
-  encryption_key: default_key
-  encrypted_key: ""
-  initialization_vector: ""
 
 two:
   name: MyString
   content_type: MyString
   data: 
   entry: two
-  encryption_key: default_key
-  encrypted_key: ""
-  initialization_vector: ""

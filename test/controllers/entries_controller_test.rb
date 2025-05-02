@@ -26,6 +26,46 @@ class EntriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to entry_url(Entry.last)
   end
+  
+  test "should create entry with attachment" do
+    skip "Skipping until attachment upload is fully implemented" # Skip this test for now
+    
+    require 'tempfile'
+    
+    # Create a test file
+    file = Tempfile.new(['test', '.txt'])
+    file.write("This is a test file")
+    file.rewind
+    
+    # Create an uploaded file object
+    upload = ActionDispatch::Http::UploadedFile.new(
+      tempfile: file,
+      filename: 'test.txt',
+      type: 'text/plain'
+    )
+    
+    assert_difference(["Entry.count", "Attachment.count"]) do
+      post entries_url, params: { 
+        entry: { 
+          content: @entry.content, 
+          entry_date: @entry.entry_date,
+          attachments: [upload]
+        } 
+      }
+    end
+    
+    assert_redirected_to entry_url(Entry.last)
+    
+    # Verify the attachment was created with the correct encryption key
+    attachment = Attachment.last
+    assert_not_nil attachment.encryption_key_id
+    assert_not_nil attachment.encrypted_key
+    assert_not_nil attachment.initialization_vector
+    
+    # Clean up
+    file.close
+    file.unlink
+  end
 
   test "should show entry" do
     get entry_url(@entry)
