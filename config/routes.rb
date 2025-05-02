@@ -10,9 +10,31 @@
 #                                          PATCH  /entries/:id(.:format)                                                                            entries#update
 #                                          PUT    /entries/:id(.:format)                                                                            entries#update
 #                                          DELETE /entries/:id(.:format)                                                                            entries#destroy
+#                          encryption_keys GET    /encryption_keys(.:format)                                                                        encryption_keys#index
+#                                          POST   /encryption_keys(.:format)                                                                        encryption_keys#create
+#                       new_encryption_key GET    /encryption_keys/new(.:format)                                                                    encryption_keys#new
+#                      edit_encryption_key GET    /encryption_keys/:id/edit(.:format)                                                               encryption_keys#edit
+#                           encryption_key GET    /encryption_keys/:id(.:format)                                                                    encryption_keys#show
+#                                          PATCH  /encryption_keys/:id(.:format)                                                                    encryption_keys#update
+#                                          PUT    /encryption_keys/:id(.:format)                                                                    encryption_keys#update
+#                                          DELETE /encryption_keys/:id(.:format)                                                                    encryption_keys#destroy
+#                      download_attachment GET    /attachments/:id/download(.:format)                                                               attachments#download
+#                              new_session GET    /session/unlock(.:format)                                                                         sessions#new
+#                                  session DELETE /session(.:format)                                                                                sessions#destroy
+#                                          POST   /session(.:format)                                                                                sessions#create
+#                             lock_session DELETE /lock(.:format)                                                                                   sessions#destroy
 #                       rails_health_check GET    /up(.:format)                                                                                     rails/health#show
 #                               keys_index GET    /keys/index(.:format)                                                                             keys#index
 #                            keys_download GET    /keys/download(.:format)                                                                          keys#download
+#                         edit_api_entries GET    /api/entries/edit/:id(.:format)                                                                   api/entries#edit
+#                                          PUT    /api/entries/:id(.:format)                                                                        api/entries#update
+#                                          PATCH  /api/entries/:id(.:format)                                                                        api/entries#update
+#                                          DELETE /api/entries/:id(.:format)                                                                        api/entries#destroy
+#                              api_entries GET    /api/entries(.:format)                                                                            api/entries#index
+#                                          POST   /api/entries(.:format)                                                                            api/entries#create
+#                            new_api_entry GET    /api/entries/new(.:format)                                                                        api/entries#new
+#                                api_entry GET    /api/entries/:id(.:format)                                                                        api/entries#show
+#                                          DELETE /api/entries/:id(.:format)                                                                        api/entries#destroy
 #                                     root GET    /                                                                                                 entries#index
 #         turbo_recede_historical_location GET    /recede_historical_location(.:format)                                                             turbo/native/navigation#recede
 #         turbo_resume_historical_location GET    /resume_historical_location(.:format)                                                             turbo/native/navigation#resume
@@ -40,12 +62,13 @@
 #                       rails_disk_service GET    /rails/active_storage/disk/:encoded_key/*filename(.:format)                                       active_storage/disk#show
 #                update_rails_disk_service PUT    /rails/active_storage/disk/:encoded_token(.:format)                                               active_storage/disk#update
 #                     rails_direct_uploads POST   /rails/active_storage/direct_uploads(.:format)                                                    active_storage/direct_uploads#create
-#                            new_session GET    /unlock(.:format)                                                                                   sessions#new
-#                                session POST   /unlock(.:format)                                                                                   sessions#create
-#                                          DELETE /lock(.:format)                                                                                   sessions#destroy
+
 Rails.application.routes.draw do
   resources :entries
   resources :encryption_keys
+  
+  # Route for downloading attachments
+  get "attachments/:id/download", to: "attachments#download", as: "download_attachment"
 
   # Routes for unlocking/locking the journal (session management for the decrypted key)
   resource :session, only: [ :new, :create, :destroy ], path_names: { new: "unlock" }

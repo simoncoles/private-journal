@@ -1,0 +1,19 @@
+/* Base styles for the application */
+
+/* Fix for -webkit-text-size-adjust warning in developer tools */
+html {
+  /* Use the standard property instead of the webkit-specific one */
+  text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+/* Ensure form elements have proper accessibility */
+label {
+  display: inline-block;
+}
+
+/* Ensure all interactive elements have focus styles */
+*:focus {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}

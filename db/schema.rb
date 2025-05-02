@@ -10,7 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_14_091526) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_02_135130) do
+  create_table "attachments", force: :cascade do |t|
+    t.string "name"
+    t.string "content_type"
+    t.binary "data"
+    t.integer "entry_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "encryption_key_id", null: false
+    t.text "encrypted_key"
+    t.text "initialization_vector"
+    t.index ["encryption_key_id"], name: "index_attachments_on_encryption_key_id"
+    t.index ["entry_id"], name: "index_attachments_on_entry_id"
+  end
+
   create_table "encryption_keys", force: :cascade do |t|
     t.text "public_key"
     t.text "private_key"
@@ -37,5 +51,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_14_091526) do
     t.index ["updated_at"], name: "index_sessions_on_updated_at"
   end
 
+  add_foreign_key "attachments", "encryption_keys"
+  add_foreign_key "attachments", "entries"
   add_foreign_key "entries", "encryption_keys"
 end

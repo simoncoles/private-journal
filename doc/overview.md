@@ -42,9 +42,14 @@ The application serves as a secure, private digital journal. Users can create, v
   - **Relationships:** Belongs to an `entry`
 
 - **Encryption:**
-  - The `content` of each entry is encrypted using public-key cryptography (RSA).
-  - Attachment `data` is also encrypted using the same public-key cryptography (RSA).
-  - Encryption uses the public key, decryption uses the private key.
+  - Both entry `content` and attachment `data` use hybrid encryption:
+    - A unique AES-256-CBC key is generated for each entry/attachment
+    - Content is encrypted with this AES key (supports content of any size)
+    - The AES key is then encrypted with RSA public-key cryptography
+    - All components are stored together in a structured format
+  - This approach combines the security of asymmetric (RSA) encryption with the
+    efficiency and scalability of symmetric (AES) encryption
+  - All decryption requires the RSA private key to first decrypt the AES key
 
 - **User Interface:**
   - Standard Rails views (`index`, `show`, `new`, `edit`) are used for managing entries.
@@ -80,6 +85,19 @@ The application serves as a secure, private digital journal. Users can create, v
   - Both models access the keys stored in `Rails.application.config.encryption_keys` and use OpenSSL.
   - The setters raise a `RuntimeError` if the public key is unavailable or encryption fails.
   - The getters handle decryption errors (missing private key, corrupted data, invalid Base64) by logging the error and returning specific placeholder strings like `"[Content/Data Encrypted - Key Unavailable]"` or `"[Content/Data Decryption Failed]"`.
+
+- **Hybrid Encryption Implementation:**
+  - Both entries and attachments use a hybrid encryption approach to support content of any size:
+    1. A random AES-256-CBC key is generated for each entry/file
+    2. The content/file data is encrypted with this AES key
+    3. The AES key is encrypted with the RSA public key
+    4. All components (encrypted AES key, encrypted data, and initialization vector) are stored in a JSON structure
+    5. This structure is Base64-encoded and stored in the database
+  - During decryption:
+    1. The stored JSON structure is parsed to retrieve the encrypted AES key, encrypted data, and IV
+    2. The AES key is decrypted using the RSA private key
+    3. The content/file data is decrypted using the AES key and IV
+  - This approach allows for secure encryption of content of any size while maintaining the security benefits of asymmetric (RSA) encryption
 
 - **Date Handling:** The `entry_date` was migrated from `date` to `datetime` to store time information. Views and forms have been updated accordingly.
 - **Markdown:** A helper method `markdown(text)` in `ApplicationHelper` uses `Redcarpet` to convert Markdown text to HTML.

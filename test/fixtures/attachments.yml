@@ -1,0 +1,44 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+# == Schema Information
+#
+# Table name: attachments
+#
+#  id                    :integer          not null, primary key
+#  content_type          :string
+#  data                  :binary
+#  encrypted_key         :text
+#  initialization_vector :text
+#  name                  :string
+#  created_at            :datetime         not null
+#  updated_at            :datetime         not null
+#  encryption_key_id     :integer          not null
+#  entry_id              :integer          not null
+#
+# Indexes
+#
+#  index_attachments_on_encryption_key_id  (encryption_key_id)
+#  index_attachments_on_entry_id           (entry_id)
+#
+# Foreign Keys
+#
+#  encryption_key_id  (encryption_key_id => encryption_keys.id)
+#  entry_id           (entry_id => entries.id)
+#
+one:
+  name: MyString
+  content_type: MyString
+  data: 
+  entry: one
+  encryption_key: default_key
+  encrypted_key: ""
+  initialization_vector: ""
+
+two:
+  name: MyString
+  content_type: MyString
+  data: 
+  entry: two
+  encryption_key: default_key
+  encrypted_key: ""
+  initialization_vector: ""

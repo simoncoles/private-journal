@@ -1,3 +1,5 @@
+# TODO run migrations
+
 build:
     docker build -t ghcr.io/simoncoles/private-journal:latest --platform linux/amd64 .
 
@@ -8,7 +10,7 @@ deploy:
     ssh simonc@simon-journal.anteater-catfish.ts.net 'docker pull ghcr.io/simoncoles/private-journal:latest && docker compose up -d private-journal'
 
 console:
-    ssh -t simonc@simon-journal.anteater-catfish.ts.net 'docker exec -it private-journal-1 /rails/bin/rails console'
+    ssh -t simonc@simon-journal.anteater-catfish.ts.net 'docker compose exec -it private-journal /rails/bin/rails console'
 
 shell:
-    ssh -t simonc@simon-journal.anteater-catfish.ts.net 'docker exec -it private-journal-1 /bin/bash'
+    ssh -t simonc@simon-journal.anteater-catfish.ts.net 'docker compose exec -it private-journal /bin/bash'

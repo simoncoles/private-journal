@@ -4,12 +4,21 @@
 #
 # Table name: entries
 #
-#  id         :integer          not null, primary key
-#  category   :string           default("Diary"), not null
-#  content    :text
-#  entry_date :datetime
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
+#  id                :integer          not null, primary key
+#  category          :string           default("Diary"), not null
+#  content           :text
+#  entry_date        :datetime
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  encryption_key_id :integer          not null
+#
+# Indexes
+#
+#  index_entries_on_encryption_key_id  (encryption_key_id)
+#
+# Foreign Keys
+#
+#  encryption_key_id  (encryption_key_id => encryption_keys.id)
 #
 one:
   entry_date: <%= Time.current %>
