@@ -36,6 +36,7 @@
     "vscode": {
       "extensions": [
         "github.vscode-github-actions"
+        "alexcvzz.vscode-sqlite"
       ]
     }
   }
