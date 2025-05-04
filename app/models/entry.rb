@@ -25,7 +25,7 @@ class Entry < ApplicationRecord
   has_many :attachments, dependent: :destroy
 
   # Choices for the category field in entries
-  CATEGORIES = %w[Diary ChatGPT].freeze
+  CATEGORIES = %w[Diary ChatGPT Tarot].freeze
 
   # Ensures category is either "Diary" or "ChatGPT", defaulting to "Diary"
   # Only validate content presence if we're not explicitly setting it to blank/nil

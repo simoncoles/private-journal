@@ -71,3 +71,8 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
+
+# For testing with ngrok
+group :development do
+  gem 'ngrok-tunnel'
+end

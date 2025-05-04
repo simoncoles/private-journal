@@ -19,10 +19,12 @@
 #                                          PUT    /encryption_keys/:id(.:format)                                                                    encryption_keys#update
 #                                          DELETE /encryption_keys/:id(.:format)                                                                    encryption_keys#destroy
 #                      download_attachment GET    /attachments/:id/download(.:format)                                                               attachments#download
+#                               attachment DELETE /attachments/:id(.:format)                                                                        attachments#destroy
 #                              new_session GET    /session/unlock(.:format)                                                                         sessions#new
 #                                  session DELETE /session(.:format)                                                                                sessions#destroy
 #                                          POST   /session(.:format)                                                                                sessions#create
 #                             lock_session DELETE /lock(.:format)                                                                                   sessions#destroy
+#                         get_lock_session GET    /lock(.:format)                                                                                   sessions#destroy
 #                       rails_health_check GET    /up(.:format)                                                                                     rails/health#show
 #                               keys_index GET    /keys/index(.:format)                                                                             keys#index
 #                            keys_download GET    /keys/download(.:format)                                                                          keys#download

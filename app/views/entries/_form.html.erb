@@ -19,13 +19,20 @@
 
     <div>
       <%= form.label :category, class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= form.select :category, Entry::CATEGORIES, {}, { class: ["block shadow-sm rounded-md border border-gray-300 px-3 py-2 w-full focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm", { "border-red-400 focus:ring-red-500 focus:border-red-500": entry.errors[:category].any? }] } %>
+      <%= form.select :category, Entry::CATEGORIES, {}, { id: 'entry_category_select', class: ["block shadow-sm rounded-md border border-gray-300 px-3 py-2 w-full focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm", { "border-red-400 focus:ring-red-500 focus:border-red-500": entry.errors[:category].any? }] } %>
     </div>
 
+    <%# Conditionally render content label and helper text based on category %>
+    <% is_tarot = entry.category == 'Tarot' %>
+    <% content_label = is_tarot ? 'Question' : 'Content' %>
+    <% content_helper_text = is_tarot ? 'Enter the question you asked for the Tarot reading.' : 'Content supports Markdown formatting.' %>
+
     <div>
-      <%= form.label :content, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%# Use the dynamic label %>
+      <%= form.label :content, content_label, class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= form.text_area :content, rows: 10, class: ["block shadow-sm rounded-md border border-gray-300 px-3 py-2 w-full focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm", { "border-red-400 focus:ring-red-500 focus:border-red-500": entry.errors[:content].any? }] %>
-      <p class="mt-2 text-sm text-gray-500">Content supports Markdown formatting.</p>
+      <%# Use the dynamic helper text %>
+      <p class="mt-2 text-sm text-gray-500"><%= content_helper_text %></p>
     </div>
 
     <div data-controller="attachments">
