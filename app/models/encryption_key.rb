@@ -14,6 +14,7 @@ require "base64"
 class EncryptionKey < ApplicationRecord
   # Generates a new RSA key pair, encrypts the private key with a passphrase,
   # and saves it to the database.
+  # On the console do EncryptionKey.generate_and_save("password")
   #
   # @param passphrase [String] The passphrase to encrypt the private key.
   # @return [EncryptionKey] The newly created EncryptionKey instance.

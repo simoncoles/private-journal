@@ -3,7 +3,7 @@ class SessionsController < ApplicationController
   # Skip the filter that loads from session into Current for the unlock form only
   skip_before_action :set_current_request_details, only: [ :new ], raise: false # Use raise: false for Rails 6.1+
   # Skip CSRF protection for the create action (unlock form submission)
-  skip_before_action :verify_authenticity_token, only: [:create]
+  skip_before_action :verify_authenticity_token, only: [ :create ]
 
   def new
     # Renders the unlock form (app/views/sessions/new.html.erb)
@@ -61,20 +61,20 @@ class SessionsController < ApplicationController
 
     # Clear the Current attribute immediately for this request
     Current.decrypted_private_key = nil
-    
+
     # Store a temporary flag to indicate we just locked
     locked = true
-    
+
     # Completely clear the session
     session.clear
-    
+
     # Reset the session to get a new session ID
     reset_session
-    
+
     # After reset_session, we have a new clean session
     # Set a flag in the new session to indicate we just locked
     session[:locked] = locked if locked
-    
+
     # Redirect to unlock page
     redirect_to new_session_path, status: :see_other, notice: "Journal locked."
   end
