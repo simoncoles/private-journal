@@ -78,6 +78,7 @@ Rails.application.routes.draw do
   # DELETE /session - to lock the journal (sessions#destroy)
   resource :session, only: [ :new, :create, :destroy ], path_names: { new: "unlock" }
   delete "/lock", to: "sessions#destroy", as: "lock_session"
+  get "/lock", to: "sessions#destroy", as: "get_lock_session"
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
