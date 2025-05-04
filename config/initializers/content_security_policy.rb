@@ -18,7 +18,7 @@ Rails.application.configure do
 
   # Generate session nonces for permitted importmap, inline scripts, and inline styles.
   config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
-  config.content_security_policy_nonce_directives = %w(script-src style-src)
+  config.content_security_policy_nonce_directives = %w[script-src style-src]
 
   # Enable X-Content-Type-Options header
   config.action_dispatch.default_headers["X-Content-Type-Options"] = "nosniff"

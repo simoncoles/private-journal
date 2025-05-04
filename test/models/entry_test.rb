@@ -2,13 +2,15 @@
 #
 # Table name: entries
 #
-#  id                :integer          not null, primary key
-#  category          :string           default("Diary"), not null
-#  content           :text
-#  entry_date        :datetime
-#  created_at        :datetime         not null
-#  updated_at        :datetime         not null
-#  encryption_key_id :integer          not null
+#  id                    :integer          not null, primary key
+#  category              :string           default("Diary"), not null
+#  content               :text
+#  encrypted_aes_key     :text
+#  entry_date            :datetime
+#  initialization_vector :text
+#  created_at            :datetime         not null
+#  updated_at            :datetime         not null
+#  encryption_key_id     :integer          not null
 #
 # Indexes
 #
@@ -91,7 +93,7 @@ class EntryTest < ActiveSupport::TestCase
     entry = Entry.new(entry_date: Time.current, encryption_key: @encryption_key)
     original_content = "This is my secret diary entry."
     entry.content = original_content
-    
+
     # Content is not encrypted until save
     entry.save!
 
@@ -102,11 +104,11 @@ class EntryTest < ActiveSupport::TestCase
 
     # Check that it's Base64 encoded (simple check)
     assert_match /^[A-Za-z0-9+\/=]+$/, raw_content
-    
+
     # Decode the Base64 to check if it's a JSON structure (hybrid encryption)
     decoded = Base64.strict_decode64(raw_content)
     parsed_json = JSON.parse(decoded)
-    
+
     # Verify the JSON structure has the expected keys for hybrid encryption
     assert parsed_json.key?("key"), "Encrypted content should have an AES key"
     assert parsed_json.key?("data"), "Encrypted content should have encrypted data"
@@ -194,23 +196,23 @@ class EntryTest < ActiveSupport::TestCase
     original_content = "Original secret that needs proper encryption to test corruption"
     entry.content = original_content
     entry.save!
-    
+
     # Create an invalid JSON structure that will cause AES decryption to fail
     invalid_data = {
       "key" => Base64.strict_encode64("invalid key data"),
       "data" => Base64.strict_encode64("invalid encrypted data"),
       "iv" => Base64.strict_encode64("invalid iv")
     }
-    
+
     # Encode as Base64 JSON
     corrupted_encoded_data = Base64.strict_encode64(invalid_data.to_json)
-    
+
     # Update the database directly
     entry.update_column(:content, corrupted_encoded_data)
-    
+
     # Try to load and decrypt
     reloaded_entry = Entry.find(entry.id)
-    
+
     # We expect an error message instead of content
     error_message = reloaded_entry.content
     assert error_message.is_a?(String), "Error message should be a string"
@@ -248,7 +250,7 @@ class EntryTest < ActiveSupport::TestCase
     # Verify that the stored content is in the hybrid format
     raw_content = entry.read_attribute(:content)
     assert_not_nil raw_content
-    
+
     # Decode and verify format (if not using the special case handling)
     unless raw_content == large_content # Skip check if the special case is triggered
       decoded = Base64.strict_decode64(raw_content)

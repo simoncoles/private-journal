@@ -14,7 +14,7 @@ module ActiveSupport
     # Create test storage directory for attachments
     setup do
       # Create test storage path if it doesn't exist
-      test_storage_path = Rails.root.join('storage', 'attachments')
+      test_storage_path = Rails.root.join("storage", "attachments")
       FileUtils.mkdir_p(test_storage_path) unless Dir.exist?(test_storage_path)
     end
 

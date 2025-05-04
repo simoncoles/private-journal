@@ -66,7 +66,7 @@
 Rails.application.routes.draw do
   resources :entries
   resources :encryption_keys
-  
+
   # Routes for attachments
   get "attachments/:id/download", to: "attachments#download", as: "download_attachment"
   delete "attachments/:id", to: "attachments#destroy", as: "attachment"
@@ -74,9 +74,9 @@ Rails.application.routes.draw do
   # Routes for unlocking/locking the journal (session management for the decrypted key)
   # Creates routes for session management:
   # GET /session/unlock - for the unlock form (sessions#new)
-  # POST /session - to process the unlock (sessions#create) 
+  # POST /session - to process the unlock (sessions#create)
   # DELETE /session - to lock the journal (sessions#destroy)
-  resource :session, only: [:new, :create, :destroy], path_names: { new: "unlock" }
+  resource :session, only: [ :new, :create, :destroy ], path_names: { new: "unlock" }
   delete "/lock", to: "sessions#destroy", as: "lock_session"
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

@@ -25,7 +25,7 @@ class EntriesController < ApplicationController
   # POST /entries or /entries.json
   def create
     @entry = Entry.new(entry_params)
-    
+
     # Log params for debugging
     Rails.logger.debug "Entry creation params: #{params.inspect}"
 
@@ -36,7 +36,7 @@ class EntriesController < ApplicationController
           Rails.logger.debug "Processing attachments from params: #{params[:entry][:attachments].inspect}"
           create_attachments(@entry, params[:entry][:attachments])
         end
-        
+
         format.html { redirect_to @entry, notice: "Entry was successfully created." }
         format.json { render :show, status: :created, location: @entry }
       else
@@ -50,7 +50,7 @@ class EntriesController < ApplicationController
   def update
     # Log params for debugging
     Rails.logger.debug "Entry update params: #{params.inspect}"
-    
+
     respond_to do |format|
       if @entry.update(entry_params)
         # Handle file attachments if any
@@ -58,7 +58,7 @@ class EntriesController < ApplicationController
           Rails.logger.debug "Processing attachments from params: #{params[:entry][:attachments].inspect}"
           create_attachments(@entry, params[:entry][:attachments])
         end
-        
+
         format.html { redirect_to @entry, notice: "Entry was successfully updated." }
         format.json { render :show, status: :ok, location: @entry }
       else
@@ -88,23 +88,23 @@ class EntriesController < ApplicationController
     def entry_params
       params.require(:entry).permit(:entry_date, :content, :category)
     end
-    
+
     # Handle creating attachments for an entry
     def create_attachments(entry, attachment_files)
       return unless attachment_files.present?
-      
+
       # Handle different parameter formats - it could be an array or another structure
-      files_to_process = attachment_files.is_a?(Array) ? attachment_files : [attachment_files]
-      
+      files_to_process = attachment_files.is_a?(Array) ? attachment_files : [ attachment_files ]
+
       files_to_process.each do |file|
         next if file.blank?
-        
+
         # Debug logging to check what's being received
         Rails.logger.debug "Processing attachment: #{file.original_filename}" if file.respond_to?(:original_filename)
-        
+
         attachment = entry.attachments.build
         attachment.file = file
-        
+
         # Debug logging for saved attachment - avoid inspecting the full object which triggers decryption
         if attachment.save
           Rails.logger.debug "Attachment saved successfully with ID: #{attachment.id}"

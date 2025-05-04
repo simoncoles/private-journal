@@ -4,7 +4,7 @@ class AttachmentsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @attachment = attachments(:one)
     @entry = entries(:one)
-    
+
     # Stub the unlock check for controller tests - assumes controller actions are the focus
     ApplicationController.define_method(:require_unlocked_journal) {  }
     # Ensure Current gets initialized even if the original before_action is stubbed
@@ -14,29 +14,29 @@ class AttachmentsControllerTest < ActionDispatch::IntegrationTest
   test "should download attachment" do
     # Stub the data method to return predictable test content
     Attachment.define_method(:data) { "Test file content for download" }
-    
+
     get download_attachment_url(@attachment)
     assert_response :success
-    
+
     # Check that the content was sent with proper headers
     assert_equal "Test file content for download", response.body
     assert_equal @attachment.content_type, response.content_type
     assert_equal "attachment", response.headers["Content-Disposition"].split(";").first
     assert_includes response.headers["Content-Disposition"], @attachment.name
-    
+
     # Restore original method
     Attachment.remove_method(:data)
   end
-  
+
   test "should handle attachment download error" do
     # Stub the data method to return an error
     Attachment.define_method(:data) { "[Data Encrypted - Key Unavailable]" }
-    
+
     get download_attachment_url(@attachment)
     assert_redirected_to entry_url(@attachment.entry)
     assert_not_nil flash[:alert]
     assert_includes flash[:alert], "Unable to download"
-    
+
     # Restore original method
     Attachment.remove_method(:data)
   end
@@ -49,12 +49,12 @@ class AttachmentsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to edit_entry_url(@attachment.entry)
     assert_equal "Attachment was successfully removed.", flash[:notice]
   end
-  
+
   test "should handle destroy with turbo stream" do
     assert_difference("Attachment.count", -1) do
       delete attachment_url(@attachment), headers: { "Accept" => "text/vnd.turbo-stream.html" }
     end
-    
+
     assert_response :success
     assert_match %r{^text/vnd\.turbo-stream\.html}, response.content_type
     assert_includes response.body, "turbo-stream"
