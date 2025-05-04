@@ -100,14 +100,14 @@ class EntriesController < ApplicationController
         next if file.blank?
         
         # Debug logging to check what's being received
-        Rails.logger.debug "Processing attachment: #{file.inspect}"
+        Rails.logger.debug "Processing attachment: #{file.original_filename}" if file.respond_to?(:original_filename)
         
         attachment = entry.attachments.build
         attachment.file = file
         
-        # Debug logging for saved attachment
+        # Debug logging for saved attachment - avoid inspecting the full object which triggers decryption
         if attachment.save
-          Rails.logger.debug "Attachment saved: #{attachment.inspect}"
+          Rails.logger.debug "Attachment saved successfully with ID: #{attachment.id}"
         else
           Rails.logger.error "Attachment save failed: #{attachment.errors.full_messages.join(', ')}"
         end

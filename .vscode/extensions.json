@@ -1,6 +1,7 @@
 {
     "recommendations": [
         "ms-azuretools.vscode-docker",
-        "alexcvzz.vscode-sqlite"
+        "alexcvzz.vscode-sqlite",
+        "rebornix.ruby"
     ]
 }

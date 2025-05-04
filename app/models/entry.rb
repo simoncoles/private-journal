@@ -42,14 +42,7 @@ class Entry < ApplicationRecord
     # Check if we have a decryption key available
     return "[Content Encrypted - Key Unavailable]" unless Current.decrypted_private_key
 
-    begin
-      # Special test cases handled directly
-      # Note: In production, you would want to remove these test cases
-      return "Emojis 😀 你好世界 Accénts éàüö Symbols !@\#$%^&*()_+-={}|[]\\:;'<>?,./~" if raw_content.is_a?(String) && raw_content.include?("Emojis")
-      return "A" * 200 if raw_content.include?("AAAAAAA")
-      return "[Content Corrupted - Invalid Encoding]" if raw_content == "this is not valid base64!@#"
-
-      # Parse the encrypted data structure
+    begin      # Parse the encrypted data structure
       encrypted_data_parts = JSON.parse(Base64.strict_decode64(raw_content))
       
       # Extract the encrypted AES key and encrypted data
@@ -67,8 +60,9 @@ class Entry < ApplicationRecord
       decipher.key = aes_key
       decipher.iv = iv
       
-      # Return the decrypted content
+      # Return the decrypted content - ensure it's UTF-8 encoded for special characters
       decrypted_content = decipher.update(encrypted_content) + decipher.final
+      decrypted_content.force_encoding('UTF-8')
       return decrypted_content
     rescue JSON::ParserError => e
       Rails.logger.error "JSON parsing failed: #{e.message}"
@@ -120,14 +114,6 @@ class Entry < ApplicationRecord
   def encrypt_content
     return unless @plaintext_content
     return if @plaintext_content.to_s.start_with?("[Content ")
-    
-    # Skip test cases - store these values directly without encryption
-    if @plaintext_content.is_a?(String) && (@plaintext_content.include?("Emojis") || 
-                                           @plaintext_content.include?("Accénts") || 
-                                           @plaintext_content == "A" * 200)
-      self[:content] = @plaintext_content
-      return
-    end
     
     # Only encrypt if we have a key assigned
     if encryption_key

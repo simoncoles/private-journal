@@ -154,8 +154,9 @@ class AttachmentTest < ActiveSupport::TestCase
     end
   end
   
-  test "should decrypt data correctly" do
-    skip "Skipping test until all migrations are applied" unless Attachment.column_names.include?('encryption_key_id')
+  test "should decrypt data correctly from file system" do
+    skip "Skipping test until all migrations are applied" unless Attachment.column_names.include?('encryption_key_id') && 
+                                                                Attachment.column_names.include?('file_path')
     
     # Create and encrypt test file
     original_content = "This is content that should be encrypted and then decrypted"
@@ -172,16 +173,27 @@ class AttachmentTest < ActiveSupport::TestCase
     attachment.file = file
     assert attachment.save
     
+    # Verify file was stored on disk
+    assert attachment.file_path.present?
+    assert File.exist?(attachment.full_file_path)
+    
+    # Verify database field is empty
+    assert_nil attachment[:data]
+    
     # Reload from database
     reloaded_attachment = Attachment.find(attachment.id)
     
     # Verify decryption works correctly
     decrypted_data = reloaded_attachment.data
     assert_equal original_content, decrypted_data
+    
+    # Clean up test files
+    File.delete(attachment.full_file_path) if File.exist?(attachment.full_file_path)
   end
   
-  test "should handle large file encryption and decryption" do
-    skip "Skipping test until all migrations are applied" unless Attachment.column_names.include?('encryption_key_id')
+  test "should handle large file encryption and decryption using file system" do
+    skip "Skipping test until all migrations are applied" unless Attachment.column_names.include?('encryption_key_id') &&
+                                                                Attachment.column_names.include?('file_path')
     
     # Create large content (larger than what direct RSA could handle)
     large_content = "A" * 1_000_000  # 1MB of data
@@ -205,13 +217,21 @@ class AttachmentTest < ActiveSupport::TestCase
       assert attachment.save
     end
     
+    # Verify file was stored on disk
+    assert attachment.file_path.present?
+    assert File.exist?(attachment.full_file_path)
+    
     # Check the decryption
     reloaded_attachment = Attachment.find(attachment.id)
     assert_equal large_content, reloaded_attachment.data
+    
+    # Clean up test files
+    File.delete(attachment.full_file_path) if File.exist?(attachment.full_file_path)
   end
   
-  test "should return error message if private key is unavailable for decryption" do
-    skip "Skipping test until all migrations are applied" unless Attachment.column_names.include?('encryption_key_id')
+  test "should return error message if private key is unavailable for decryption from file system" do
+    skip "Skipping test until all migrations are applied" unless Attachment.column_names.include?('encryption_key_id') &&
+                                                                Attachment.column_names.include?('file_path')
     
     # Create and encrypt a file normally
     file = StringIO.new("Test content")
@@ -226,6 +246,10 @@ class AttachmentTest < ActiveSupport::TestCase
     attachment.file = file
     assert attachment.save
     
+    # Verify file was stored on disk
+    assert attachment.file_path.present?
+    assert File.exist?(attachment.full_file_path)
+    
     # Remove the private key
     original_key = Current.decrypted_private_key
     Current.decrypted_private_key = nil
@@ -236,9 +260,15 @@ class AttachmentTest < ActiveSupport::TestCase
     
     # Restore key for other tests
     Current.decrypted_private_key = original_key
+    
+    # Clean up test files
+    File.delete(attachment.full_file_path) if File.exist?(attachment.full_file_path)
   end
   
-  test "should return error message if decryption fails due to corruption" do
+  test "should return error message if decryption fails due to corruption from file system" do
+    skip "Skipping test until all migrations are applied" unless Attachment.column_names.include?('encryption_key_id') &&
+                                                                Attachment.column_names.include?('file_path')
+    
     # Create and encrypt a file
     file = StringIO.new("Test content for corruption test")
     def file.original_filename
@@ -248,34 +278,17 @@ class AttachmentTest < ActiveSupport::TestCase
       "text/plain"
     end
     
-    # Create attachment with the appropriate model for the schema
-    attachment = nil
-    if Attachment.column_names.include?('encryption_key_id')
-      attachment = Attachment.new(entry: @entry, encryption_key: @encryption_key)
-    else
-      attachment = Attachment.new(entry: @entry)
-    end
-    
+    # Create attachment
+    attachment = Attachment.new(entry: @entry, encryption_key: @encryption_key)
     attachment.file = file
     assert attachment.save
     
-    # Corrupt the data based on schema
-    if Attachment.column_names.include?('encrypted_key')
-      # New schema - corrupt the encrypted key
-      attachment.update_column(:encrypted_key, Base64.strict_encode64("invalid key data"))
-    else
-      # Legacy schema - corrupt the JSON data
-      encoded_data = attachment[:data]
-      begin
-        decoded = Base64.strict_decode64(encoded_data)
-        data = JSON.parse(decoded)
-        data["key"] = Base64.strict_encode64("invalid key data")
-        corrupted = Base64.strict_encode64(data.to_json)
-        attachment.update_column(:data, corrupted)
-      rescue => e
-        flunk "Failed to corrupt legacy data format: #{e.message}"
-      end
-    end
+    # Verify file was stored on disk
+    assert attachment.file_path.present?
+    assert File.exist?(attachment.full_file_path)
+    
+    # Corrupt the file
+    File.binwrite(attachment.full_file_path, "corrupted data")
     
     # Try to decrypt the corrupted data
     reloaded_attachment = Attachment.find(attachment.id)
@@ -284,11 +297,15 @@ class AttachmentTest < ActiveSupport::TestCase
     error_message = reloaded_attachment.data
     assert error_message.is_a?(String), "Error message should be a string"
     assert_match /Decryption Failed|Corrupted/, error_message, "Error message should indicate decryption failure"
+    
+    # Clean up test files
+    File.delete(attachment.full_file_path) if File.exist?(attachment.full_file_path)
   end
   
-  test "should automatically assign latest encryption key if none specified" do
+  test "should automatically assign latest encryption key if none specified and use file system" do
     # Skip this test if we don't have the encryption_key_id column
-    skip "Skipping auto key assignment test for old schema" unless Attachment.column_names.include?('encryption_key_id')
+    skip "Skipping auto key assignment test for old schema" unless Attachment.column_names.include?('encryption_key_id') &&
+                                                                   Attachment.column_names.include?('file_path')
     
     # Create a test file
     file = StringIO.new("Test content for auto key assignment")
@@ -308,5 +325,42 @@ class AttachmentTest < ActiveSupport::TestCase
     # Verify the encryption key was automatically assigned
     assert_not_nil attachment.encryption_key_id
     assert_equal @encryption_key.id, attachment.encryption_key_id
+    
+    # Verify file was stored on disk
+    assert attachment.file_path.present?
+    assert File.exist?(attachment.full_file_path)
+    
+    # Clean up test files
+    File.delete(attachment.full_file_path) if File.exist?(attachment.full_file_path)
+  end
+  
+  test "should clean up file when attachment is destroyed" do
+    skip "Skipping test until all migrations are applied" unless Attachment.column_names.include?('encryption_key_id') &&
+                                                                Attachment.column_names.include?('file_path')
+    
+    # Create and encrypt a file
+    file = StringIO.new("Test content for file cleanup test")
+    def file.original_filename
+      "cleanup_test.txt"
+    end
+    def file.content_type
+      "text/plain"
+    end
+    
+    # Create attachment
+    attachment = Attachment.new(entry: @entry, encryption_key: @encryption_key)
+    attachment.file = file
+    assert attachment.save
+    
+    # Verify file was stored on disk
+    assert attachment.file_path.present?
+    file_path = attachment.full_file_path
+    assert File.exist?(file_path)
+    
+    # Destroy the attachment
+    attachment.destroy
+    
+    # Verify file was removed from disk
+    assert_not File.exist?(file_path), "File should be removed when attachment is destroyed"
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_02_135130) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_03_143958) do
   create_table "attachments", force: :cascade do |t|
     t.string "name"
     t.string "content_type"
@@ -21,8 +21,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_02_135130) do
     t.integer "encryption_key_id", null: false
     t.text "encrypted_key"
     t.text "initialization_vector"
+    t.string "file_path"
     t.index ["encryption_key_id"], name: "index_attachments_on_encryption_key_id"
     t.index ["entry_id"], name: "index_attachments_on_entry_id"
+    t.index ["file_path"], name: "index_attachments_on_file_path", unique: true
   end
 
   create_table "encryption_keys", force: :cascade do |t|

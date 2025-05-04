@@ -38,7 +38,7 @@
       <%# LOCK/UNLOCK STATUS %>
       <% if Current.decrypted_private_key.present? %>
         <%# UNLOCKED state - Show open padlock and Lock button %>
-        <%= button_to lock_session_path, method: :delete, class: "text-gray-600 hover:text-gray-900 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500", title: "Lock Journal", data: { turbo_confirm: "Are you sure you want to lock the journal? You will need your password to unlock it again." } do %>
+        <%= button_to lock_session_path, method: :delete, class: "text-gray-600 hover:text-gray-900 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500", title: "Lock Journal" do %>
           <%# Open Padlock SVG %>
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8h4m-6 4h6m4-6v1a3 3 0 01-3 3H9a3 3 0 01-3-3v-1a3 3 0 013-3h2a3 3 0 013 3z" />

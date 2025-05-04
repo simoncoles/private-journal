@@ -36,7 +36,8 @@
     "vscode": {
       "extensions": [
         "github.vscode-github-actions"
-        "alexcvzz.vscode-sqlite"
+        "alexcvzz.vscode-sqlite",
+        "rebornix.ruby"
       ]
     }
   }

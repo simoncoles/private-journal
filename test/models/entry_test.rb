@@ -269,9 +269,9 @@ class EntryTest < ActiveSupport::TestCase
     entry.content = special_content
     entry.save!
 
-    # Force content to include the special string to trigger the test case
-    entry.update_column(:content, "Special Emojis content")
-
+    # Check that we don't modify the encryption directly
+    # Instead of bypassing the encryption mechanism, let's test it properly
+    # by ensuring our original entry was saved correctly
     reloaded_entry = Entry.find(entry.id)
     assert_equal special_content, reloaded_entry.content, "Decrypted special content should match original"
     assert_equal Encoding::UTF_8, reloaded_entry.content.encoding, "Decrypted content should be UTF-8 encoded"

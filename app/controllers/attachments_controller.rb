@@ -1,6 +1,6 @@
 class AttachmentsController < ApplicationController
   before_action :require_unlocked_journal
-  before_action :set_attachment, only: [:download]
+  before_action :set_attachment, only: [:download, :destroy]
 
   # GET /attachments/:id/download
   def download
@@ -19,6 +19,18 @@ class AttachmentsController < ApplicationController
               filename: @attachment.name,
               type: @attachment.content_type,
               disposition: 'attachment'
+  end
+  
+  # DELETE /attachments/:id
+  def destroy
+    entry = @attachment.entry
+    @attachment.destroy!
+    
+    respond_to do |format|
+      format.html { redirect_to edit_entry_path(entry), notice: "Attachment was successfully removed." }
+      format.json { head :no_content }
+      format.turbo_stream { render turbo_stream: turbo_stream.remove(@attachment) }
+    end
   end
 
   private

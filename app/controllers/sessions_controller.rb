@@ -49,10 +49,14 @@ class SessionsController < ApplicationController
   end
 
   def destroy
+# Log the lock action
+Rails.logger.info("Journal locked by user at #{Time.current}")
+
     # Remove the key from the session to "lock" the journal
     session.delete(:decrypted_private_key)
     # Also clear the Current attribute immediately for this request
     Current.decrypted_private_key = nil
+    reset_session
     redirect_to new_session_path, status: :see_other, notice: "Journal locked." # Redirect to unlock page
   end
 end

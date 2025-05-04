@@ -30,9 +30,11 @@ one:
   content_type: MyString
   data: 
   entry: one
+  encryption_key: one
 
 two:
   name: MyString
   content_type: MyString
   data: 
   entry: two
+  encryption_key: one
