@@ -34,19 +34,49 @@
     <% if @entry.attachments.any? %>
       <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
         <h3 class="text-lg font-medium text-gray-900 mb-3">Attachments</h3>
-        <ul class="divide-y divide-gray-200">
-          <% @entry.attachments.each do |attachment| %>
-            <li class="py-3 flex items-center w-full">
-              <div class="flex items-center flex-grow min-w-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                </svg>
-                <span class="text-sm text-gray-600 truncate"><%= attachment.name %></span>
-              </div>
-              <%= link_to "Download", download_attachment_path(attachment), class: "ml-auto inline-flex items-center py-1 px-2 text-sm text-blue-600 hover:text-blue-800" %>
-            </li>
-          <% end %>
-        </ul>
+        
+        <% image_attachments = @entry.attachments.select { |a| a.content_type.to_s.start_with?('image/') } %>
+        <% other_attachments = @entry.attachments - image_attachments %>
+        
+        <% if image_attachments.any? %>
+          <div class="mb-4">
+            <h4 class="text-sm font-medium text-gray-700 mb-2">Images</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              <% image_attachments.each do |attachment| %>
+                <div class="aspect-square rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200">
+                  <%= link_to download_attachment_path(attachment), class: "block w-full h-full" do %>
+                    <img 
+                      src="<%= url_for(controller: 'attachments', action: 'download', id: attachment.id) %>" 
+                      alt="<%= attachment.name %>" 
+                      class="object-contain w-full h-full"
+                    />
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+        
+        <% if other_attachments.any? %>
+          <div>
+            <% if image_attachments.any? %>
+              <h4 class="text-sm font-medium text-gray-700 mb-2">Other Files</h4>
+            <% end %>
+            <ul class="divide-y divide-gray-200">
+              <% other_attachments.each do |attachment| %>
+                <li class="py-3 flex items-center w-full">
+                  <div class="flex items-center flex-grow min-w-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                    </svg>
+                    <span class="text-sm text-gray-600 truncate"><%= attachment.name %></span>
+                  </div>
+                  <%= link_to "Download", download_attachment_path(attachment), class: "ml-auto inline-flex items-center py-1 px-2 text-sm text-blue-600 hover:text-blue-800" %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
       </div>
     <% end %>
   </div>
