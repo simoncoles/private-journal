@@ -37,8 +37,7 @@
       "extensions": [
         "github.vscode-github-actions",
         "alexcvzz.vscode-sqlite",
-        "rebornix.ruby",
-        "rebornix.Ruby"
+        "Shopify.ruby-lsp"
       ]
     }
   }
