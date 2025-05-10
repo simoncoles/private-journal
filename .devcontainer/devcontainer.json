@@ -35,9 +35,9 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "github.vscode-github-actions"
+        "github.vscode-github-actions",
         "alexcvzz.vscode-sqlite",
-        "rebornix.ruby"
+        "Shopify.ruby-lsp"
       ]
     }
   }
