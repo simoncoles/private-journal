@@ -46,6 +46,7 @@ gem "image_processing", ">= 1.2"
 gem "redis", ">= 5.0"
 gem "redcarpet" # For Markdown rendering
 gem "rubyzip", require: "zip" # For creating zip archives
+gem "ruby_llm"
 
 # gem "lockbox" # Removed, using manual OpenSSL
 

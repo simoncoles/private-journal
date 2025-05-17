@@ -43,6 +43,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_04_131621) do
     t.integer "encryption_key_id", null: false
     t.text "encrypted_aes_key"
     t.text "initialization_vector"
+    t.text "llm_response"
     t.index ["encryption_key_id"], name: "index_entries_on_encryption_key_id"
   end
 

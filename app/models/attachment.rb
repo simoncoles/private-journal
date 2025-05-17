@@ -36,6 +36,7 @@ class Attachment < ApplicationRecord
   before_validation :assign_encryption_key
   before_save :ensure_file_path
   after_destroy :remove_file_from_disk
+  after_commit :send_image_to_llm, on: :create
 
   # Maximum file size: 10 MB
   MAX_FILE_SIZE = 10.megabytes
@@ -371,6 +372,11 @@ class Attachment < ApplicationRecord
         self.data = uploaded_file.to_s
       end
     end
+  end
+
+  def send_image_to_llm
+    return unless content_type.to_s.start_with?("image/")
+    EntryImageLlmJob.perform_later(entry_id, id)
   end
 
   private

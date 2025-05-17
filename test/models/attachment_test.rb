@@ -365,4 +365,20 @@ class AttachmentTest < ActiveSupport::TestCase
     # Verify file was removed from disk
     assert_not File.exist?(file_path), "File should be removed when attachment is destroyed"
   end
+
+  test "image attachment enqueues LLM job" do
+    file = StringIO.new("img")
+    def file.original_filename
+      "test.png"
+    end
+    def file.content_type
+      "image/png"
+    end
+
+    assert_enqueued_with(job: EntryImageLlmJob) do
+      attachment = Attachment.new(entry: @entry, encryption_key: @encryption_key)
+      attachment.file = file
+      attachment.save!
+    end
+  end
 end
