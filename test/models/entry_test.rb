@@ -105,14 +105,12 @@ class EntryTest < ActiveSupport::TestCase
     # Check that it's Base64 encoded (simple check)
     assert_match /^[A-Za-z0-9+\/=]+$/, raw_content
 
-    # Decode the Base64 to check if it's a JSON structure (hybrid encryption)
-    decoded = Base64.strict_decode64(raw_content)
-    parsed_json = JSON.parse(decoded)
+    # Verify that the encrypted_aes_key and initialization_vector are set
+    assert_not_nil entry.read_attribute(:encrypted_aes_key)
+    assert_not_nil entry.read_attribute(:initialization_vector)
 
-    # Verify the JSON structure has the expected keys for hybrid encryption
-    assert parsed_json.key?("key"), "Encrypted content should have an AES key"
-    assert parsed_json.key?("data"), "Encrypted content should have encrypted data"
-    assert parsed_json.key?("iv"), "Encrypted content should have an initialization vector"
+    # Verify that we can still access the original content
+    assert_equal original_content, entry.content
   end
 
   test "should decrypt content on retrieval" do
@@ -247,18 +245,14 @@ class EntryTest < ActiveSupport::TestCase
       entry.save!
     end
 
-    # Verify that the stored content is in the hybrid format
+    # Verify that the stored content is encrypted
     raw_content = entry.read_attribute(:content)
     assert_not_nil raw_content
+    assert_not_equal large_content, raw_content
 
-    # Decode and verify format (if not using the special case handling)
-    unless raw_content == large_content # Skip check if the special case is triggered
-      decoded = Base64.strict_decode64(raw_content)
-      parsed_json = JSON.parse(decoded)
-      assert parsed_json.key?("key"), "Encrypted content should have an AES key"
-      assert parsed_json.key?("data"), "Encrypted content should have encrypted data"
-      assert parsed_json.key?("iv"), "Encrypted content should have an initialization vector"
-    end
+    # Verify that the encrypted_aes_key and initialization_vector are set
+    assert_not_nil entry.read_attribute(:encrypted_aes_key)
+    assert_not_nil entry.read_attribute(:initialization_vector)
 
     # Verify the decryption works correctly
     reloaded_entry = Entry.find(entry.id)
