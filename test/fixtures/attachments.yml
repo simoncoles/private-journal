@@ -8,6 +8,7 @@
 #  content_type          :string
 #  data                  :binary
 #  encrypted_key         :text
+#  file_path             :string
 #  initialization_vector :text
 #  name                  :string
 #  created_at            :datetime         not null
@@ -19,6 +20,7 @@
 #
 #  index_attachments_on_encryption_key_id  (encryption_key_id)
 #  index_attachments_on_entry_id           (entry_id)
+#  index_attachments_on_file_path          (file_path) UNIQUE
 #
 # Foreign Keys
 #

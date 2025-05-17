@@ -2,6 +2,24 @@
   <p class="text-lg font-semibold text-gray-800">
     <%= entry.entry_date.strftime("%B %d, %Y") %>
   </p>
-  <%# Optionally add a preview later if desired %>
-  <%# <p class="text-sm text-gray-600 truncate">Preview of content...</p> %>
+  
+  <% if entry.attachments.any? %>
+    <div class="mt-2 flex flex-wrap gap-2">
+      <% entry.attachments.each do |attachment| %>
+        <% if attachment.content_type.to_s.start_with?('image/') %>
+          <div class="relative group">
+            <%= link_to download_attachment_path(attachment) do %>
+              <div class="w-16 h-16 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
+                <img 
+                  src="<%= url_for(controller: 'attachments', action: 'download', id: attachment.id) %>" 
+                  alt="<%= attachment.name %>" 
+                  class="object-cover h-full w-full"
+                />
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
 </div>

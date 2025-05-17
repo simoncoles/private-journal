@@ -4,13 +4,15 @@
 #
 # Table name: entries
 #
-#  id                :integer          not null, primary key
-#  category          :string           default("Diary"), not null
-#  content           :text
-#  entry_date        :datetime
-#  created_at        :datetime         not null
-#  updated_at        :datetime         not null
-#  encryption_key_id :integer          not null
+#  id                    :integer          not null, primary key
+#  category              :string           default("Diary"), not null
+#  content               :text
+#  encrypted_aes_key     :text
+#  entry_date            :datetime
+#  initialization_vector :text
+#  created_at            :datetime         not null
+#  updated_at            :datetime         not null
+#  encryption_key_id     :integer          not null
 #
 # Indexes
 #

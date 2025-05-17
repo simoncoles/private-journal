@@ -6,7 +6,7 @@
 Rails.application.config.filter_parameters += [
   :passw, :email, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn, :cvv, :cvc,
   # Filter sensitive content from entries
-  "entry.content", 
+  "entry.content",
   # Filter attachment data
   "attachment.data"
 ]
