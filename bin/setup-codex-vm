@@ -15,14 +15,10 @@ fi
 
 echo "Installing Ruby $RUBY_VERSION and Bundler on Ubuntu 24.04..."
 
-# Update package list & install dependencies needed to build Ruby
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  build-essential \
-  curl git \
-  libssl-dev zlib1g-dev libreadline-dev \
-  libyaml-dev libsqlite3-dev libffi-dev libgdbm-dev \
-  libncurses5-dev libdb-dev libgmp-dev \
-  ca-certificates
+# Update package list & install dependencies needed to build Ruby which aren't in the base container
+# sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+#   libyaml-dev \
+#   libgmp-dev 
 
 # RBENV setup
 export RBENV_ROOT="${RBENV_ROOT:-$HOME/.rbenv}"
