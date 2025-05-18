@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Abort on errors, undefined variables, or errors in pipelines
+set -euo pipefail
+
+# Determine repository root (directory one level above this script)
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+# Read required Ruby version from .ruby-version
+RUBY_VERSION="$(tr -d '\n[:space:]' < "$REPO_ROOT/.ruby-version")"
+
+if [[ -z "$RUBY_VERSION" ]]; then
+  echo "Error: Could not determine Ruby version. Ensure .ruby-version exists at repo root." >&2
+  exit 1
+fi
+
+echo "Installing Ruby $RUBY_VERSION and Bundler on Ubuntu 24.04..."
+
+# Update package list & install dependencies needed to build Ruby
+sudo apt-get update -qq
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  build-essential \
+  curl git \
+  libssl-dev zlib1g-dev libreadline-dev \
+  libyaml-dev libsqlite3-dev libffi-dev libgdbm-dev \
+  libncurses5-dev libdb-dev libgmp-dev \
+  ca-certificates
+
+# RBENV setup
+export RBENV_ROOT="${RBENV_ROOT:-$HOME/.rbenv}"
+if ! command -v rbenv >/dev/null 2>&1; then
+  echo "Installing rbenv..."
+  git clone https://github.com/rbenv/rbenv.git "$RBENV_ROOT"
+  cd "$RBENV_ROOT" && src/configure && make -C src
+  # shellcheck disable=SC2016
+  {
+    echo 'export RBENV_ROOT="$HOME/.rbenv"'
+    echo 'export PATH="$RBENV_ROOT/bin:$PATH"'
+    echo 'eval "$(rbenv init - bash)"'
+  } >> "$HOME/.bashrc"
+  export PATH="$RBENV_ROOT/bin:$PATH"
+  eval "$(rbenv init - bash)"
+else
+  echo "rbenv already installed."
+fi
+
+# ruby-build plugin (allows rbenv to compile requested Ruby versions)
+if [ ! -d "$RBENV_ROOT/plugins/ruby-build" ]; then
+  echo "Installing ruby-build plugin..."
+  git clone https://github.com/rbenv/ruby-build.git "$RBENV_ROOT/plugins/ruby-build"
+fi
+
+# Install requested Ruby version if not already present
+if ! rbenv versions --bare | grep -qx "$RUBY_VERSION"; then
+  echo "Compiling Ruby $RUBY_VERSION (this may take a while)..."
+  rbenv install "$RUBY_VERSION"
+fi
+rbenv global "$RUBY_VERSION"
+
+echo "Ruby $(ruby -v) installed."
+
+# Ensure bundler is installed (comes with Ruby >2.6 but we pin just in case)
+gem install --no-document bundler
+
+echo "Bundler $(bundler -v) installed."
+
+echo "Setup complete! You may need to restart your shell for rbenv changes to take effect."
+

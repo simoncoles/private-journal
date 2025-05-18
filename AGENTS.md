@@ -20,7 +20,11 @@ and that allows entries to be decrypted.
 Entries can have attachments which are themselves encrypted. 
 
 ## Setup
-bin/setup 
+
+cd /workspace/private-journal
+bin/setup-codex-vm
+bin/setup
+
 
 ## Production Deployment
 
