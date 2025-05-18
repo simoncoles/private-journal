@@ -16,8 +16,6 @@ fi
 echo "Installing Ruby $RUBY_VERSION and Bundler on Ubuntu 24.04..."
 
 # Update package list & install dependencies needed to build Ruby
-sudo sed -i 's|http://|https://|g' /etc/apt/sources.list /etc/apt/sources.list.d/*.list
-sudo apt-get update -qq
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
   build-essential \
   curl git \
