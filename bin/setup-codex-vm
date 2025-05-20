@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 # Setup script for running tests in the Codex VM
 
-set -e
-
 # Ensure packages required for system tests are installed before network
 # access is disabled. Chromedriver is needed for Capybara's headless Chrome
 # driver used in system tests.
