@@ -19,13 +19,6 @@ and that allows entries to be decrypted.
 
 Entries can have attachments which are themselves encrypted. 
 
-## Setup
-
-cd /workspace/private-journal
-bin/setup-codex-vm
-bin/setup
-
-
 ## Production Deployment
 
 The application is deployed using Docker Compose and for convenience there's a Justfile with
