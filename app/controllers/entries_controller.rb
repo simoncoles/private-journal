@@ -2,7 +2,7 @@ class EntriesController < ApplicationController
   # Add this line to enforce unlock for all entry actions
   before_action :require_unlocked_journal, except: [ :new, :create ]
   # Skip CSRF protection for create action
-  skip_before_action :verify_authenticity_token, only: [:create]
+  skip_before_action :verify_authenticity_token, only: [ :create ]
   before_action :set_entry, only: [ :show, :edit, :update, :destroy ]
 
   # GET /entries or /entries.json

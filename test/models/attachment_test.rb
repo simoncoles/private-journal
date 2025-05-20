@@ -131,7 +131,6 @@ class AttachmentTest < ActiveSupport::TestCase
   end
 
   test "should decrypt data correctly from file system" do
-
     # Create and encrypt test file
     original_content = "This is content that should be encrypted and then decrypted"
     file = StringIO.new(original_content)
@@ -166,7 +165,6 @@ class AttachmentTest < ActiveSupport::TestCase
   end
 
   test "should handle large file encryption and decryption using file system" do
-
     # Create large content (larger than what direct RSA could handle)
     large_content = "A" * 1_000_000  # 1MB of data
     file = StringIO.new(large_content)
@@ -202,7 +200,6 @@ class AttachmentTest < ActiveSupport::TestCase
   end
 
   test "should return error message if private key is unavailable for decryption from file system" do
-
     # Create and encrypt a file normally
     file = StringIO.new("Test content")
     def file.original_filename
@@ -236,7 +233,6 @@ class AttachmentTest < ActiveSupport::TestCase
   end
 
   test "should return error message if decryption fails due to corruption from file system" do
-
     # Create and encrypt a file
     file = StringIO.new("Test content for corruption test")
     def file.original_filename
@@ -271,7 +267,6 @@ class AttachmentTest < ActiveSupport::TestCase
   end
 
   test "should automatically assign latest encryption key if none specified and use file system" do
-
     # Create a test file
     file = StringIO.new("Test content for auto key assignment")
     def file.original_filename
@@ -300,7 +295,6 @@ class AttachmentTest < ActiveSupport::TestCase
   end
 
   test "should clean up file when attachment is destroyed" do
-
     # Create and encrypt a file
     file = StringIO.new("Test content for file cleanup test")
     def file.original_filename
