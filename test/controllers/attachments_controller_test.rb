@@ -5,10 +5,18 @@ class AttachmentsControllerTest < ActionDispatch::IntegrationTest
     @attachment = attachments(:one)
     @entry = entries(:one)
 
+    # Save original data method so it can be restored after stubbing
+    @original_data_method = Attachment.instance_method(:data)
+
     # Stub the unlock check for controller tests - assumes controller actions are the focus
     ApplicationController.define_method(:require_unlocked_journal) {  }
     # Ensure Current gets initialized even if the original before_action is stubbed
     Current.decrypted_private_key = "DUMMY_KEY_FOR_CURRENT"
+  end
+
+  teardown do
+    # Restore original data method in case a test stubbed it
+    Attachment.define_method(:data, @original_data_method)
   end
 
   test "should download attachment" do
