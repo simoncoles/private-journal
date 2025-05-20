@@ -41,7 +41,7 @@ class EntriesTest < ApplicationSystemTestCase
     click_on "Edit this entry", match: :first
 
     fill_in "Content", with: @entry.content
-    fill_in "Entry date", with: @entry.entry_date
+    fill_in "Entry date", with: @entry.entry_date.strftime("%Y-%m-%dT%H:%M")
     click_on "Update Entry"
 
     assert_text "Entry was successfully updated"
