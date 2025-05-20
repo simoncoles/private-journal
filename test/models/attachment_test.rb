@@ -116,49 +116,21 @@ class AttachmentTest < ActiveSupport::TestCase
     end
 
     # Create and save the attachment
-    attachment = nil
-    if Attachment.column_names.include?("encryption_key_id")
-      # New schema format
-      attachment = Attachment.new(entry: @entry, encryption_key: @encryption_key)
-    else
-      # Legacy schema format
-      attachment = Attachment.new(entry: @entry)
-    end
+    attachment = Attachment.new(entry: @entry, encryption_key: @encryption_key)
 
     attachment.file = file
     assert attachment.save
 
-    # Verify the data is not stored as plaintext
+    # Verify the encrypted data location based on schema
+    # Verify the encrypted data is stored on disk and metadata saved in DB
     raw_data = attachment[:data]
-    assert_not_nil raw_data
-    assert_not_equal file_content, raw_data
-
-    # Encryption format check is conditional based on schema
-    if Attachment.column_names.include?("encrypted_key") &&
-       Attachment.column_names.include?("initialization_vector")
-      # New schema - check direct fields
-      assert_not_nil attachment[:encrypted_key]
-      assert_not_nil attachment[:initialization_vector]
-    else
-      # Legacy schema - check JSON format
-      begin
-        # This should be a Base64-encoded JSON string with encryption data
-        decoded = Base64.strict_decode64(raw_data)
-        data_structure = JSON.parse(decoded)
-
-        # Basic check for JSON structure
-        assert data_structure.key?("key"), "Encrypted data should have an AES key"
-        assert data_structure.key?("data"), "Encrypted data should have encrypted content"
-        assert data_structure.key?("iv"), "Encrypted data should have an initialization vector"
-      rescue => e
-        flunk "Data is not in expected legacy format: #{e.message}"
-      end
-    end
+    assert_nil raw_data
+    assert File.exist?(attachment.full_file_path), "Encrypted file should be stored on disk"
+    assert_not_nil attachment[:encrypted_key]
+    assert_not_nil attachment[:initialization_vector]
   end
 
   test "should decrypt data correctly from file system" do
-    skip "Skipping test until all migrations are applied" unless Attachment.column_names.include?("encryption_key_id") &&
-                                                                Attachment.column_names.include?("file_path")
 
     # Create and encrypt test file
     original_content = "This is content that should be encrypted and then decrypted"
@@ -194,8 +166,6 @@ class AttachmentTest < ActiveSupport::TestCase
   end
 
   test "should handle large file encryption and decryption using file system" do
-    skip "Skipping test until all migrations are applied" unless Attachment.column_names.include?("encryption_key_id") &&
-                                                                Attachment.column_names.include?("file_path")
 
     # Create large content (larger than what direct RSA could handle)
     large_content = "A" * 1_000_000  # 1MB of data
@@ -232,8 +202,6 @@ class AttachmentTest < ActiveSupport::TestCase
   end
 
   test "should return error message if private key is unavailable for decryption from file system" do
-    skip "Skipping test until all migrations are applied" unless Attachment.column_names.include?("encryption_key_id") &&
-                                                                Attachment.column_names.include?("file_path")
 
     # Create and encrypt a file normally
     file = StringIO.new("Test content")
@@ -268,8 +236,6 @@ class AttachmentTest < ActiveSupport::TestCase
   end
 
   test "should return error message if decryption fails due to corruption from file system" do
-    skip "Skipping test until all migrations are applied" unless Attachment.column_names.include?("encryption_key_id") &&
-                                                                Attachment.column_names.include?("file_path")
 
     # Create and encrypt a file
     file = StringIO.new("Test content for corruption test")
@@ -305,9 +271,6 @@ class AttachmentTest < ActiveSupport::TestCase
   end
 
   test "should automatically assign latest encryption key if none specified and use file system" do
-    # Skip this test if we don't have the encryption_key_id column
-    skip "Skipping auto key assignment test for old schema" unless Attachment.column_names.include?("encryption_key_id") &&
-                                                                   Attachment.column_names.include?("file_path")
 
     # Create a test file
     file = StringIO.new("Test content for auto key assignment")
@@ -337,8 +300,6 @@ class AttachmentTest < ActiveSupport::TestCase
   end
 
   test "should clean up file when attachment is destroyed" do
-    skip "Skipping test until all migrations are applied" unless Attachment.column_names.include?("encryption_key_id") &&
-                                                                Attachment.column_names.include?("file_path")
 
     # Create and encrypt a file
     file = StringIO.new("Test content for file cleanup test")

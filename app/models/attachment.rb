@@ -150,14 +150,11 @@ class Attachment < ApplicationRecord
     end
 
     begin
-      # Use the appropriate decryption method based on schema
-      if has_encryption_fields? && self[:encrypted_key].present?
-        # New format with separate fields
-        decrypt_with_separate_fields(encrypted_data)
-      else
-        # Legacy format with JSON blob
-        decrypt_legacy_format(encrypted_data)
-      end
+      # Require encryption metadata
+      return "[Data Encrypted - Missing Metadata]" unless self[:encrypted_key].present? && self[:initialization_vector].present?
+
+      # Decrypt using the stored metadata
+      decrypt_with_separate_fields(encrypted_data)
     rescue ArgumentError => e
       # This happens when the data is not valid Base64
       Rails.logger.error "Base64 decoding failed: #{e.message}"
@@ -233,41 +230,6 @@ class Attachment < ApplicationRecord
     end
   end
 
-  # Legacy decryption method using JSON blob
-  def decrypt_legacy_format(raw_data)
-    begin
-      # Parse the encrypted data structure
-      encrypted_data_parts = JSON.parse(Base64.strict_decode64(raw_data))
-
-      # Extract the encrypted AES key and encrypted data
-      encrypted_aes_key = Base64.strict_decode64(encrypted_data_parts["key"])
-      encrypted_data = Base64.strict_decode64(encrypted_data_parts["data"])
-      iv = Base64.strict_decode64(encrypted_data_parts["iv"])
-
-      # Decrypt the AES key using the RSA private key
-      rsa_key = OpenSSL::PKey::RSA.new(Current.decrypted_private_key)
-      aes_key = rsa_key.private_decrypt(encrypted_aes_key, OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING)
-
-      # Decrypt the file data using the AES key
-      decipher = OpenSSL::Cipher.new("aes-256-cbc")
-      decipher.decrypt
-      decipher.key = aes_key
-      decipher.iv = iv
-
-      # Return the decrypted file data
-      decrypted_data = decipher.update(encrypted_data) + decipher.final
-      decrypted_data
-    rescue JSON::ParserError => e
-      Rails.logger.error "JSON parsing failed: #{e.message}"
-      "[Data Corrupted - Invalid Format]"
-    rescue OpenSSL::Cipher::CipherError => e
-      Rails.logger.error "AES decryption failed: #{e.message}"
-      "[Data Corrupted]"
-    rescue => e
-      Rails.logger.error "Legacy decryption failed: #{e.message}"
-      "[Decryption Failed]"
-    end
-  end
 
   # Override the setter to intercept and encrypt data
   def data=(value)
@@ -322,19 +284,13 @@ class Attachment < ApplicationRecord
         end
 
         if has_encryption_fields?
-          # New format: Store encryption metadata
-          # Only clear data if using file system
+          # Store encryption metadata and write data either to disk or DB
           self[:data] = use_filesystem ? nil : encrypted_data
           self[:encrypted_key] = Base64.strict_encode64(encrypted_aes_key)
           self[:initialization_vector] = Base64.strict_encode64(iv)
         else
-          # Legacy format: Store as JSON blob in DB
-          encrypted_data_structure = {
-            key: Base64.strict_encode64(encrypted_aes_key),
-            data: Base64.strict_encode64(encrypted_data),
-            iv: Base64.strict_encode64(iv)
-          }
-          self[:data] = Base64.strict_encode64(encrypted_data_structure.to_json)
+          # Without the necessary columns we cannot store encrypted data
+          raise "Missing encryption columns"
         end
       rescue => e
         Rails.logger.error("Attachment encryption failed: #{e.message}")
