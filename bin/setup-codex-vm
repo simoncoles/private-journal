@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
-# Put this into the setup script for Codex bin/setup-codex-vm
+# Setup script for running tests in the Codex VM
+
+set -e
+
+# Ensure packages required for system tests are installed before network
+# access is disabled. Chromedriver is needed for Capybara's headless Chrome
+# driver used in system tests.
+apt-get update -y
+apt-get install -y chromium-driver chromium-browser > /dev/null
 
 bundle install
 bin/rails db:prepare

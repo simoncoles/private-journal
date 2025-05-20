@@ -3,6 +3,13 @@ require "application_system_test_case"
 class EntriesTest < ApplicationSystemTestCase
   setup do
     @entry = entries(:one)
+    # Create a real encryption key and unlock the journal for system tests
+    @test_passphrase = "test-pass"
+    EncryptionKey.generate_and_save(@test_passphrase)
+
+    visit new_session_path
+    fill_in "Password", with: @test_passphrase
+    click_on "Unlock"
   end
 
   test "visiting the index" do
