@@ -4,8 +4,8 @@
 # Ensure packages required for system tests are installed before network
 # access is disabled. Chromedriver is needed for Capybara's headless Chrome
 # driver used in system tests.
-apt-get update -y
-apt-get install -y chromium-driver chromium-browser > /dev/null
+sudo apt update -y
+sudo apt install -y chromium-driver chromium-browser > /dev/null
 
 bundle install
 bin/rails db:prepare
