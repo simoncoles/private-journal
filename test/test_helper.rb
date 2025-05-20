@@ -2,6 +2,20 @@ ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
 require "fileutils"
+require "ostruct"
+
+# Stub RubyLLM during tests to avoid network requests
+module RubyLLM
+  class TestChat
+    def ask(*)
+      OpenStruct.new(content: "Test response")
+    end
+  end
+
+  def self.chat(**)
+    TestChat.new
+  end
+end
 
 module ActiveSupport
   class TestCase

@@ -75,8 +75,9 @@
       <p class="mt-2 text-sm text-gray-500">You can select multiple files. New selections will be added to your existing selections. Files will be encrypted just like your entry content.</p>
     </div>
 
-    <div class="flex justify-end">
+    <div class="flex justify-end space-x-2">
       <%= form.submit class: "w-full sm:w-auto rounded-md shadow-sm px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+      <%= form.submit "Ask", name: "ask", value: "true", class: "w-full sm:w-auto rounded-md shadow-sm px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" %>
     </div>
   </div>
 <% end %>

@@ -31,13 +31,21 @@ class EntriesController < ApplicationController
     # Log params for debugging
     Rails.logger.debug "Entry creation params: #{params.inspect}"
 
+    attachments_param = params.dig(:entry, :attachments)
+
+    if params[:ask].present?
+      begin
+        response_text = ask_llm(@entry.content, attachments_param)
+        @entry.content = "## Question\n#{@entry.content}\n\n## Response\n#{response_text}"
+      rescue => e
+        Rails.logger.error "LLM request failed: #{e.message}"
+        @entry.errors.add(:base, "LLM request failed: #{e.message}")
+      end
+    end
+
     respond_to do |format|
-      if @entry.save
-        # Handle file attachments if any
-        if params[:entry] && params[:entry][:attachments]
-          Rails.logger.debug "Processing attachments from params: #{params[:entry][:attachments].inspect}"
-          create_attachments(@entry, params[:entry][:attachments])
-        end
+      if @entry.errors.empty? && @entry.save
+        create_attachments(@entry, attachments_param) if attachments_param
 
         format.html { redirect_to @entry, notice: "Entry was successfully created." }
         format.json { render :show, status: :created, location: @entry }
@@ -89,6 +97,20 @@ class EntriesController < ApplicationController
     # Only allow a list of trusted parameters through.
     def entry_params
       params.require(:entry).permit(:entry_date, :content, :category)
+    end
+
+    # Send the user's input and optional image to the configured LLM
+    def ask_llm(text, attachment_files)
+      chat = RubyLLM.chat
+
+      files = attachment_files.is_a?(Array) ? attachment_files : Array(attachment_files)
+      image_file = files.find { |f| f.respond_to?(:content_type) && f.content_type.to_s.start_with?("image/") }
+
+      if image_file
+        chat.ask(text, with: { image: image_file.tempfile.path }).content
+      else
+        chat.ask(text).content
+      end
     end
 
     # Handle creating attachments for an entry
