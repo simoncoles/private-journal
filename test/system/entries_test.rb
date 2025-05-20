@@ -5,7 +5,11 @@ class EntriesTest < ApplicationSystemTestCase
     @entry = entries(:one)
     # Create a real encryption key and unlock the journal for system tests
     @test_passphrase = "test-pass"
-    EncryptionKey.generate_and_save(@test_passphrase)
+    encryption_key = EncryptionKey.generate_and_save(@test_passphrase)
+
+    # Existing fixture entries reference placeholder keys which cause
+    # encryption to fail. Reassign them to the real key created above.
+    Entry.update_all(encryption_key_id: encryption_key.id)
 
     visit new_session_path
     fill_in "Password", with: @test_passphrase
@@ -19,7 +23,7 @@ class EntriesTest < ApplicationSystemTestCase
 
   test "should create entry" do
     visit entries_url
-    click_on "New Entry"
+    click_on "New Entry", match: :first
 
     # Use specific values that will pass validations
     fill_in "Content", with: "Test content for a new entry"
