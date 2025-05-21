@@ -5,7 +5,24 @@
 # access is disabled. Chromedriver is needed for Capybara's headless Chrome
 # driver used in system tests.
 sudo apt update -y
-sudo apt install -y chromium-driver chromium-browser > /dev/null
+sudo apt install -y postgresql postgresql-contrib chromium-driver chromium-browser
+
+# Start PostgreSQL service
+sudo service postgresql start
+
+# Wait a moment for PostgreSQL to start
+sleep 2
+
+# Verify PostgreSQL is running
+sudo service postgresql status
+
+# List databases using sudo to run as postgres user
+sudo -u postgres psql -c '\l'
+
+# Set postgres user password to match database.yml configuration
+sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+# It also appears to try from the root user
+sudo -u postgres psql -c "CREATE USER root WITH SUPERUSER PASSWORD 'password';" || true
 
 bundle install
 bin/rails db:prepare
